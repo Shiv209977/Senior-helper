@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 const nav = {
   patient: [
     ["Dashboard", "/patient"],
+    ["Profile", "/patient/profile"],
     ["Medications", "/patient/medications"],
     ["Appointments", "/patient/appointments"],
     ["Health + AI", "/patient/health"],
@@ -70,4 +71,3 @@ export function AppShell({ children }: { children: ReactNode }) {
     </div>
   );
 }
-

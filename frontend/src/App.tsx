@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { AdminDashboard, AdminUsersPage } from "@/pages/AdminPages";
 import { LoginPage, RegisterPage } from "@/pages/AuthPages";
 import { CaregiverAlertsPage, CaregiverDashboard } from "@/pages/CaregiverPages";
-import { PatientAppointmentsPage, PatientDashboard, PatientHealthPage, PatientMedicationsPage } from "@/pages/PatientPages";
+import { PatientAppointmentsPage, PatientDashboard, PatientHealthPage, PatientMedicationsPage, PatientProfilePage } from "@/pages/PatientPages";
 import { dashboardPath } from "@/lib/api";
 
 export default function App() {
@@ -19,6 +19,7 @@ export default function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/" element={<Navigate to={user ? dashboardPath(user.role) : "/login"} replace />} />
       <Route path="/patient" element={<ProtectedPage role="patient"><PatientDashboard /></ProtectedPage>} />
+      <Route path="/patient/profile" element={<ProtectedPage role="patient"><PatientProfilePage /></ProtectedPage>} />
       <Route path="/patient/medications" element={<ProtectedPage role="patient"><PatientMedicationsPage /></ProtectedPage>} />
       <Route path="/patient/appointments" element={<ProtectedPage role="patient"><PatientAppointmentsPage /></ProtectedPage>} />
       <Route path="/patient/health" element={<ProtectedPage role="patient"><PatientHealthPage /></ProtectedPage>} />

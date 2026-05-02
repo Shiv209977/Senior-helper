@@ -10,7 +10,7 @@ from apps.notifications.services import mark_alert
 
 class NotificationViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationSerializer
-    http_method_names = ["get", "patch", "head", "options"]
+    http_method_names = ["get", "patch", "post", "head", "options"]
 
     def get_queryset(self):
         return Notification.objects.filter(recipient=self.request.user)
@@ -28,7 +28,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
 class AlertViewSet(viewsets.ModelViewSet):
     serializer_class = AlertSerializer
-    http_method_names = ["get", "patch", "head", "options"]
+    http_method_names = ["get", "patch", "post", "head", "options"]
 
     def get_queryset(self):
         user = self.request.user
@@ -55,4 +55,3 @@ class AlertViewSet(viewsets.ModelViewSet):
         if request.user.role not in ["caregiver", "admin"]:
             raise PermissionDenied("Only caregivers or admins can resolve alerts.")
         return Response(AlertSerializer(mark_alert(alert, Alert.Status.RESOLVED, request.data.get("note", ""))).data)
-

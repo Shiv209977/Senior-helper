@@ -7,7 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.audit.services import log_action
 from apps.users.permissions import IsAdminRole
-from apps.users.serializers import LoginSerializer, RegisterSerializer, UserSerializer
+from apps.users.serializers import AdminUserSerializer, LoginSerializer, RegisterSerializer, UserSerializer
 
 User = get_user_model()
 
@@ -50,8 +50,7 @@ class CurrentUserView(APIView):
 
 
 class UserAdminViewSet(viewsets.ModelViewSet):
-    serializer_class = UserSerializer
+    serializer_class = AdminUserSerializer
     permission_classes = [IsAdminRole]
     queryset = User.objects.order_by("-created_at")
     http_method_names = ["get", "patch", "head", "options"]
-

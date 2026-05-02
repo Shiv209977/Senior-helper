@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework import decorators, viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -8,6 +9,8 @@ from apps.health.models import EmergencyRequest, SymptomRecord, VitalSign
 from apps.health.serializers import EmergencyRequestSerializer, SymptomRecordSerializer, VitalSignSerializer
 from apps.linking.models import CaregiverLink
 from apps.notifications.services import create_alert_for_patient
+
+User = get_user_model()
 
 
 def caregiver_can_access(user, patient):
@@ -23,6 +26,29 @@ def patient_queryset_for(user, queryset):
         patient_ids = CaregiverLink.objects.filter(caregiver=user, status=CaregiverLink.Status.ACTIVE).values_list("patient_id", flat=True)
         return queryset.filter(patient_id__in=patient_ids)
     return queryset.none()
+
+
+def resolve_record_patient(user, requested_patient):
+    if user.role == "patient":
+        if requested_patient and requested_patient != user:
+            raise PermissionDenied("Patients can only add records for themselves.")
+        return user
+
+    if user.role == "admin":
+        if not requested_patient:
+            raise ValidationError("patient is required.")
+        if requested_patient.role != User.Role.PATIENT or not requested_patient.is_active:
+            raise ValidationError("Patient not found.")
+        return requested_patient
+
+    if user.role == "caregiver":
+        if not requested_patient:
+            raise ValidationError("patient is required.")
+        if caregiver_can_access(user, requested_patient):
+            return requested_patient
+        raise PermissionDenied("Caregivers can only add records for linked patients.")
+
+    raise PermissionDenied("You are not allowed to add records.")
 
 
 def create_vitals_alerts(vital):
@@ -48,9 +74,7 @@ class VitalSignViewSet(viewsets.ModelViewSet):
         return patient_queryset_for(self.request.user, VitalSign.objects.select_related("patient", "recorded_by"))
 
     def perform_create(self, serializer):
-        patient = self.request.user
-        if self.request.user.role != "patient":
-            raise PermissionDenied("Only patients can add their own vitals in this demo build.")
+        patient = resolve_record_patient(self.request.user, serializer.validated_data.pop("patient", None))
         vital = serializer.save(patient=patient, recorded_by=self.request.user)
         create_vitals_alerts(vital)
         log_action(user=self.request.user, action="vitals_created", metadata={"vital_id": vital.id})
@@ -63,9 +87,8 @@ class SymptomRecordViewSet(viewsets.ModelViewSet):
         return patient_queryset_for(self.request.user, SymptomRecord.objects.select_related("patient", "recorded_by"))
 
     def perform_create(self, serializer):
-        if self.request.user.role != "patient":
-            raise PermissionDenied("Only patients can add their own symptoms in this demo build.")
-        record = serializer.save(patient=self.request.user, recorded_by=self.request.user)
+        patient = resolve_record_patient(self.request.user, serializer.validated_data.pop("patient", None))
+        record = serializer.save(patient=patient, recorded_by=self.request.user)
         create_symptom_alerts(record)
         log_action(user=self.request.user, action="symptoms_created", metadata={"symptom_id": record.id})
 
@@ -112,4 +135,3 @@ class EmergencyRequestViewSet(viewsets.ModelViewSet):
         emergency.resolved_at = timezone.now()
         emergency.save(update_fields=["status", "resolved_at"])
         return Response(EmergencyRequestSerializer(emergency).data)
-
