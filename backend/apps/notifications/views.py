@@ -1,3 +1,4 @@
+from django.db.models import Case, IntegerField, Value, When
 from rest_framework import decorators, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
@@ -6,6 +7,15 @@ from apps.linking.models import CaregiverLink
 from apps.notifications.models import Alert, Notification
 from apps.notifications.serializers import AlertSerializer, NotificationSerializer
 from apps.notifications.services import mark_alert
+
+SEVERITY_ORDER = Case(
+    When(severity="emergency", then=Value(1)),
+    When(severity="high", then=Value(2)),
+    When(severity="medium", then=Value(3)),
+    When(severity="low", then=Value(4)),
+    default=Value(5),
+    output_field=IntegerField(),
+)
 
 
 class NotificationViewSet(viewsets.ModelViewSet):
@@ -32,7 +42,9 @@ class AlertViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Alert.objects.select_related("patient", "created_for_user")
+        queryset = Alert.objects.select_related("patient", "created_for_user").annotate(
+            severity_rank=SEVERITY_ORDER
+        ).order_by("severity_rank", "-created_at")
         if user.role == "admin":
             return queryset
         if user.role == "patient":

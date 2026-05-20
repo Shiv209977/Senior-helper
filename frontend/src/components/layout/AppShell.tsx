@@ -1,12 +1,15 @@
 import { HeartPulse, LogOut, ShieldCheck } from "lucide-react";
-import type { ReactNode } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { type ReactNode, useEffect, useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
+import { NotificationBell } from "@/pages/NotificationPages";
 import { useAuth } from "@/context/AuthContext";
+import { listNotifications } from "@/lib/api";
 
 const nav = {
   patient: [
+    ["Today", "/patient/today"],
     ["Dashboard", "/patient"],
     ["Profile", "/patient/profile"],
     ["Medications", "/patient/medications"],
@@ -25,6 +28,17 @@ const nav = {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const notificationsPath = user?.role === "caregiver" ? "/caregiver/notifications" : "/notifications";
+
+  useEffect(() => {
+    if (!user) return;
+    listNotifications()
+      .then((data) => setUnreadCount(data.results.filter((n) => !n.is_read).length))
+      .catch(() => undefined);
+  }, [user]);
 
   return (
     <div className="min-h-screen">
@@ -41,6 +55,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Link>
           {user ? (
             <div className="flex flex-wrap items-center gap-3">
+              <NotificationBell unreadCount={unreadCount} onClick={() => navigate(notificationsPath)} />
               <span className="inline-flex items-center gap-2 rounded-full bg-[#e6f0ea] px-4 py-2 font-bold text-[#21473e]">
                 <ShieldCheck size={18} aria-hidden /> {user.full_name} · {user.role}
               </span>

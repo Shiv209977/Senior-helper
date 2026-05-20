@@ -16,9 +16,9 @@ export function AdminDashboard() {
   useEffect(() => {
     Promise.all([listAdminUsers(), listAuditLogs(), listAlerts()])
       .then(([userData, logData, alertData]) => {
-        setUsers(userData);
-        setLogs(logData.slice(0, 6));
-        setAlerts(alertData);
+        setUsers(userData.results);
+        setLogs(logData.results.slice(0, 6));
+        setAlerts(alertData.results);
       })
       .catch((error) => setMessage(apiErrorMessage(error, "Could not load admin overview.")));
   }, []);

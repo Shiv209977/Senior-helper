@@ -14,6 +14,13 @@ export type User = {
   created_at?: string;
 };
 
+export type PaginatedResponse<T> = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+};
+
 export type PatientProfile = {
   id: number;
   user: number;
@@ -61,6 +68,7 @@ export type Medication = {
   scheduled_times: string[];
   start_date: string;
   end_date: string | null;
+  grace_period_minutes: number;
   instructions: string;
   is_active: boolean;
 };
@@ -99,6 +107,15 @@ export type Alert = {
   severity: string;
   status: string;
   caregiver_note: string;
+  created_at: string;
+};
+
+export type Notification = {
+  id: number;
+  title: string;
+  message: string;
+  notification_type: string;
+  is_read: boolean;
   created_at: string;
 };
 
@@ -157,6 +174,14 @@ export type AIRiskAssessment = {
   risk_score: number;
   risk_category: string;
   confidence: string | null;
+  confidence_explanation: string[];
+  freshness_warnings: string[];
+  risk_trend: {
+    direction: string;
+    message: string;
+    previous_score: number | null;
+    previous_category: string | null;
+  };
   reasons: string[];
   suggested_action: string;
   disclaimer: string;
@@ -180,6 +205,64 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+function onRefreshed(token: string) {
+  refreshSubscribers.forEach((cb) => cb(token));
+  refreshSubscribers = [];
+}
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (originalRequest.url === "/auth/refresh/") {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        window.location.href = "/login";
+        return Promise.reject(error);
+      }
+
+      originalRequest._retry = true;
+
+      if (!isRefreshing) {
+        isRefreshing = true;
+        const refreshToken = localStorage.getItem("refresh_token");
+        if (!refreshToken) {
+          localStorage.removeItem("access_token");
+          window.location.href = "/login";
+          return Promise.reject(error);
+        }
+        try {
+          const { data } = await axios.post(`${API_BASE_URL}/auth/refresh/`, { refresh: refreshToken });
+          localStorage.setItem("access_token", data.access);
+          isRefreshing = false;
+          onRefreshed(data.access);
+          originalRequest.headers.Authorization = `Bearer ${data.access}`;
+          return api(originalRequest);
+        } catch {
+          isRefreshing = false;
+          refreshSubscribers = [];
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("refresh_token");
+          window.location.href = "/login";
+          return Promise.reject(error);
+        }
+      }
+
+      return new Promise((resolve) => {
+        refreshSubscribers.push((token: string) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          resolve(api(originalRequest));
+        });
+      });
+    }
+    return Promise.reject(error);
+  },
+);
 
 export async function login(email: string, password: string) {
   const { data } = await api.post("/auth/login/", { email, password });
@@ -232,9 +315,9 @@ export async function acceptCaregiverInvite(invite_code: string) {
   return data as CaregiverLink;
 }
 
-export async function listMedications() {
-  const { data } = await api.get("/medications/");
-  return data as Medication[];
+export async function listMedications(page = 1) {
+  const { data } = await api.get("/medications/", { params: { page } });
+  return data as PaginatedResponse<Medication>;
 }
 
 export async function createMedication(payload: Partial<Medication>) {
@@ -247,9 +330,9 @@ export async function updateMedication(id: number, payload: Partial<Medication>)
   return data as Medication;
 }
 
-export async function listMedicationLogs() {
-  const { data } = await api.get("/medication-logs/");
-  return data as MedicationLog[];
+export async function listMedicationLogs(page = 1) {
+  const { data } = await api.get("/medication-logs/", { params: { page } });
+  return data as PaginatedResponse<MedicationLog>;
 }
 
 export async function createMedicationLog(payload: Partial<MedicationLog>) {
@@ -262,9 +345,9 @@ export async function updateMedicationLog(id: number, payload: Partial<Medicatio
   return data as MedicationLog;
 }
 
-export async function listAppointments() {
-  const { data } = await api.get("/appointments/");
-  return data as Appointment[];
+export async function listAppointments(page = 1) {
+  const { data } = await api.get("/appointments/", { params: { page } });
+  return data as PaginatedResponse<Appointment>;
 }
 
 export async function createAppointment(payload: Partial<Appointment>) {
@@ -277,9 +360,9 @@ export async function updateAppointment(id: number, payload: Partial<Appointment
   return data as Appointment;
 }
 
-export async function listVitals() {
-  const { data } = await api.get("/vitals/");
-  return data as VitalSign[];
+export async function listVitals(page = 1) {
+  const { data } = await api.get("/vitals/", { params: { page } });
+  return data as PaginatedResponse<VitalSign>;
 }
 
 export async function createVitals(payload: Partial<VitalSign>) {
@@ -287,9 +370,9 @@ export async function createVitals(payload: Partial<VitalSign>) {
   return data as VitalSign;
 }
 
-export async function listSymptoms() {
-  const { data } = await api.get("/symptoms/");
-  return data as SymptomRecord[];
+export async function listSymptoms(page = 1) {
+  const { data } = await api.get("/symptoms/", { params: { page } });
+  return data as PaginatedResponse<SymptomRecord>;
 }
 
 export async function createSymptoms(payload: Partial<SymptomRecord>) {
@@ -297,9 +380,9 @@ export async function createSymptoms(payload: Partial<SymptomRecord>) {
   return data as SymptomRecord;
 }
 
-export async function listEmergencies() {
-  const { data } = await api.get("/emergencies/");
-  return data as EmergencyRequest[];
+export async function listEmergencies(page = 1) {
+  const { data } = await api.get("/emergencies/", { params: { page } });
+  return data as PaginatedResponse<EmergencyRequest>;
 }
 
 export async function createEmergency(payload: Partial<EmergencyRequest>) {
@@ -317,9 +400,9 @@ export async function resolveEmergency(id: number) {
   return data as EmergencyRequest;
 }
 
-export async function listAlerts() {
-  const { data } = await api.get("/alerts/");
-  return data as Alert[];
+export async function listAlerts(page = 1) {
+  const { data } = await api.get("/alerts/", { params: { page } });
+  return data as PaginatedResponse<Alert>;
 }
 
 export async function acknowledgeAlert(id: number, note = "") {
@@ -332,9 +415,23 @@ export async function resolveAlert(id: number, note = "") {
   return data as Alert;
 }
 
-export async function listAssessments() {
-  const { data } = await api.get("/ai-assessments/");
-  return data as AIRiskAssessment[];
+export async function listNotifications(page = 1) {
+  const { data } = await api.get("/notifications/", { params: { page } });
+  return data as PaginatedResponse<Notification>;
+}
+
+export async function markNotificationRead(id: number) {
+  const { data } = await api.patch(`/notifications/${id}/`, { is_read: true });
+  return data as Notification;
+}
+
+export async function markAllNotificationsRead() {
+  await api.post("/notifications/mark-all-read/");
+}
+
+export async function listAssessments(page = 1) {
+  const { data } = await api.get("/ai-assessments/", { params: { page } });
+  return data as PaginatedResponse<AIRiskAssessment>;
 }
 
 export async function runAssessment(patient?: number) {
@@ -342,9 +439,9 @@ export async function runAssessment(patient?: number) {
   return data as AIRiskAssessment;
 }
 
-export async function listAdminUsers() {
-  const { data } = await api.get("/admin/users/");
-  return data as User[];
+export async function listAdminUsers(page = 1) {
+  const { data } = await api.get("/admin/users/", { params: { page } });
+  return data as PaginatedResponse<User>;
 }
 
 export async function updateAdminUser(id: number, payload: Partial<User>) {
@@ -352,9 +449,9 @@ export async function updateAdminUser(id: number, payload: Partial<User>) {
   return data as User;
 }
 
-export async function listAuditLogs() {
-  const { data } = await api.get("/admin/audit-logs/");
-  return data as AuditLog[];
+export async function listAuditLogs(page = 1) {
+  const { data } = await api.get("/admin/audit-logs/", { params: { page } });
+  return data as PaginatedResponse<AuditLog>;
 }
 
 export function apiErrorMessage(error: unknown, fallback = "Something went wrong. Please try again.") {
@@ -376,5 +473,5 @@ export function apiErrorMessage(error: unknown, fallback = "Something went wrong
 export function dashboardPath(role: Role) {
   if (role === "admin") return "/admin";
   if (role === "caregiver") return "/caregiver";
-  return "/patient";
+  return "/patient/today";
 }

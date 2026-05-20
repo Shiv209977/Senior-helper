@@ -1,4 +1,4 @@
-import { AlertTriangle, Brain, CalendarDays, Pill, Siren, UserRound } from "lucide-react";
+import { AlertTriangle, Brain, CalendarDays, Pill, Siren, UserRound, Heart, Stethoscope, Activity } from "lucide-react";
 import { FormEvent, useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 
@@ -40,18 +40,26 @@ import {
   type SymptomRecord,
   type VitalSign,
 } from "@/lib/api";
+import { VitalsChart } from "@/components/charts/VitalsChart";
+import { RiskTrendChart } from "@/components/charts/RiskTrendChart";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
 export function PatientDashboard() {
   const [invite, setInvite] = useState("");
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [vitals, setVitals] = useState<VitalSign[]>([]);
+  const [assessments, setAssessments] = useState<AIRiskAssessment[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    listAlerts()
-      .then((data) => setAlerts(data.slice(0, 4)))
+    Promise.all([listAlerts(), listVitals(), listAssessments()])
+      .then(([alertData, vitalData, assessmentData]) => {
+        setAlerts(alertData.results.slice(0, 4));
+        setVitals(vitalData.results.slice(0, 20));
+        setAssessments(assessmentData.results.slice(0, 20));
+      })
       .catch(() => undefined)
       .finally(() => setLoading(false));
   }, []);
@@ -84,6 +92,16 @@ export function PatientDashboard() {
         </div>
         {message ? <div className="mt-4"><StatusMessage message={message} tone={message.includes("Could not") ? "error" : "success"} /></div> : null}
       </Card>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardTitle>Health trends</CardTitle>
+          <div className="mt-4"><VitalsChart vitals={vitals} /></div>
+        </Card>
+        <Card>
+          <CardTitle>AI risk history</CardTitle>
+          <div className="mt-4"><RiskTrendChart assessments={assessments} /></div>
+        </Card>
+      </div>
       <Card>
         <CardTitle>Recent alerts</CardTitle>
         <div className="mt-4 grid gap-3">
@@ -91,6 +109,173 @@ export function PatientDashboard() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export function TodayPage() {
+  const [medications, setMedications] = useState<Medication[]>([]);
+  const [logs, setLogs] = useState<MedicationLog[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [assessment, setAssessment] = useState<AIRiskAssessment | null>(null);
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  async function load() {
+    const [meds, logData, appts, assessData] = await Promise.all([
+      listMedications(),
+      listMedicationLogs(),
+      listAppointments(),
+      listAssessments(),
+    ]);
+    const todayStr = today();
+    setMedications(meds.results.filter((m) => m.is_active));
+    setLogs(logData.results.filter((l) => sameLocalDate(l.scheduled_datetime, new Date())));
+    setAppointments(appts.results.filter((a) => a.date === todayStr));
+    setAssessment(assessData.results[0] ?? null);
+  }
+
+  useEffect(() => {
+    load()
+      .catch((error) => setMessage(apiErrorMessage(error, "Could not load today's care checklist.")))
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function markDose(medication: Medication, statusValue: string) {
+    setMessage("");
+    try {
+      const scheduled = scheduledDateTimeForToday(medication);
+      const existing = logs.find((log) => log.medication === medication.id && sameLocalDate(log.scheduled_datetime, scheduled));
+      if (existing) {
+        await updateMedicationLog(existing.id, { status: statusValue });
+      } else {
+        await createMedicationLog({ medication: medication.id, scheduled_datetime: scheduled.toISOString(), status: statusValue });
+      }
+      setMessage(`Dose marked ${statusValue}.`);
+      await load();
+    } catch (error) {
+      setMessage(apiErrorMessage(error, "Could not mark dose."));
+    }
+  }
+
+  async function handleEmergency() {
+    setMessage("");
+    try {
+      await createEmergency({ emergency_type: "urgent_help", message: "Patient requested urgent caregiver support." });
+      setMessage("Emergency request created. Linked caregivers can see and acknowledge it.");
+    } catch (error) {
+      setMessage(apiErrorMessage(error, "Could not create emergency request."));
+    }
+  }
+
+  async function handleRunAI() {
+    setMessage("");
+    try {
+      const data = await runAssessment();
+      setAssessment(data);
+      setMessage("AI-assisted risk check completed.");
+    } catch (error) {
+      setMessage(apiErrorMessage(error, "Could not run risk check."));
+    }
+  }
+
+  if (loading) return <LoadingState label="Loading today's checklist..." />;
+
+  const pendingDoses = logs.filter((l) => l.status === "pending");
+  const takenDoses = logs.filter((l) => l.status === "taken");
+
+  return (
+    <div className="grid gap-6">
+      <PageHeader
+        title="Today's care checklist"
+        subtitle="Everything you need today in one place. Stay on top of medications, appointments, and health checks."
+      />
+      {message ? <StatusMessage message={message} tone={message.includes("Could not") ? "error" : "success"} /> : null}
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <QuickActionCard icon={<Pill />} title="Medications" count={`${takenDoses.length}/${logs.length || medications.length * (medications[0]?.scheduled_times?.length || 1)} taken`} href="/patient/medications" />
+        <QuickActionCard icon={<CalendarDays />} title="Appointments" count={`${appointments.length} today`} href="/patient/appointments" />
+        <QuickActionCard icon={<Activity />} title="Health + Vitals" count="Record now" href="/patient/health" />
+      </div>
+
+      <Card>
+        <SectionTitle title="Today's medicines" subtitle="Mark each dose after you take it." />
+        <div className="mt-5 grid gap-4">
+          {medications.length ? medications.map((med) => {
+            const doseLog = logs.find((l) => l.medication === med.id);
+            const status = doseLog?.status ?? "pending";
+            return (
+              <div key={med.id} className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-[#d8cebd] bg-white p-5">
+                <div>
+                  <h3 className="text-xl font-black">{med.medicine_name}</h3>
+                  <p className="text-lg font-semibold text-[#5b665f]">{med.dosage} · {med.scheduled_times.join(", ")}</p>
+                  {med.instructions ? <p className="mt-1 font-semibold text-[#5b665f]">{med.instructions}</p> : null}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge className={status === "taken" ? "bg-green-100 text-green-800" : status === "missed" ? "bg-red-100 text-red-800" : ""}>{status}</Badge>
+                  {status !== "taken" ? (
+                    <div className="flex gap-2">
+                      <Button variant="primary" onClick={() => markDose(med, "taken")}>Mark taken</Button>
+                      <Button variant="ghost" onClick={() => markDose(med, "missed")}>Missed</Button>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            );
+          }) : <EmptyState title="No medications today" message="Add medications from the Medications page to see them here." />}
+        </div>
+      </Card>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <SectionTitle title="Today's appointments" subtitle="Doctor visits, treatments, and scans." />
+          <div className="mt-5 grid gap-3">
+            {appointments.length ? appointments.map((appt) => (
+              <div key={appt.id} className="rounded-2xl border border-[#d8cebd] bg-white p-4">
+                <h3 className="text-lg font-black">{appt.title}</h3>
+                <p className="font-semibold text-[#5b665f]">{appt.time} · {appt.appointment_type.replace("_", " ")} · {appt.hospital_name || appt.doctor_name}</p>
+                <Badge className="mt-2">{appt.status}</Badge>
+              </div>
+            )) : <EmptyState title="No appointments today" message="A quiet day. Add upcoming visits from the Appointments page." />}
+          </div>
+        </Card>
+
+        <div className="grid gap-6">
+          <Card>
+            <SectionTitle title="AI risk check" subtitle="Run a supportive safety assessment." />
+            <div className="mt-5">
+              {assessment ? (
+                <div className="rounded-2xl border border-[#d8cebd] bg-white p-4">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Badge className="text-lg">{assessment.risk_category.toUpperCase()} · {assessment.risk_score}/100</Badge>
+                    <Badge>{assessment.model_version}</Badge>
+                  </div>
+                  <p className="mt-3 text-lg font-black">{assessment.suggested_action}</p>
+                  <p className="mt-2 rounded-2xl bg-[#f7f2e8] p-3 text-sm font-semibold text-[#5b665f]">{assessment.disclaimer}</p>
+                </div>
+              ) : <EmptyState title="No assessment yet" message="Run a risk check to see your supportive safety score." />}
+              <Button className="mt-4" onClick={handleRunAI}><Brain aria-hidden /> Run risk check</Button>
+            </div>
+          </Card>
+
+          <Card className="border-2 border-[#b65f3a]">
+            <SectionTitle title="Need urgent help?" subtitle="Notify your caregiver immediately." />
+            <div className="mt-5">
+              <Button variant="danger" size="lg" onClick={handleEmergency}><Siren aria-hidden /> Emergency request</Button>
+            </div>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QuickActionCard({ icon, title, count, href }: { icon: ReactNode; title: string; count: string; href: string }) {
+  return (
+    <Link to={href} className="senior-card rounded-3xl p-5 transition hover:-translate-y-1">
+      <span className="mb-3 grid size-12 place-items-center rounded-2xl bg-[#e6f0ea] text-[#21473e]">{icon}</span>
+      <h2 className="text-xl font-black">{title}</h2>
+      <p className="mt-2 text-lg font-semibold text-[#5b665f]">{count}</p>
+    </Link>
   );
 }
 
@@ -174,8 +359,8 @@ export function PatientMedicationsPage() {
 
   async function load() {
     const [medicationData, logData] = await Promise.all([listMedications(), listMedicationLogs()]);
-    setItems(medicationData);
-    setLogs(logData.slice(0, 12));
+    setItems(medicationData.results);
+    setLogs(logData.results.slice(0, 12));
   }
 
   useEffect(() => {
@@ -535,6 +720,31 @@ function AssessmentCard({ assessment }: { assessment: AIRiskAssessment }) {
         <Badge>Confidence {assessment.confidence ?? "n/a"}</Badge>
         <Badge>{assessment.model_version}</Badge>
       </div>
+
+      {assessment.freshness_warnings?.length ? (
+        <div className="mt-4 rounded-2xl border-2 border-[#f2c66d] bg-[#fef9ed] p-4">
+          <p className="mb-2 font-black text-[#b65f3a]">Data freshness warning</p>
+          <ul className="grid gap-1 text-sm font-semibold text-[#5b665f]">
+            {assessment.freshness_warnings.map((w) => <li key={w}>· {w}</li>)}
+          </ul>
+        </div>
+      ) : null}
+
+      {assessment.risk_trend?.direction !== "first" ? (
+        <div className={`mt-4 rounded-2xl p-4 ${assessment.risk_trend?.direction === "worsening" ? "border-2 border-red-200 bg-red-50" : assessment.risk_trend?.direction === "improving" ? "border-2 border-green-200 bg-green-50" : "bg-[#f7f2e8]"}`}>
+          <p className="font-black">{assessment.risk_trend?.message}</p>
+        </div>
+      ) : null}
+
+      {assessment.confidence_explanation?.length ? (
+        <div className="mt-4 rounded-2xl bg-[#e6f0ea] p-4">
+          <p className="mb-2 font-black text-[#21473e]">Confidence explanation</p>
+          <ul className="grid gap-1 text-sm font-semibold text-[#5b665f]">
+            {assessment.confidence_explanation.map((e) => <li key={e}>· {e}</li>)}
+          </ul>
+        </div>
+      ) : null}
+
       <ul className="mt-4 grid gap-2 text-lg font-semibold">
         {assessment.reasons.map((reason) => <li key={reason}>{reason}</li>)}
       </ul>

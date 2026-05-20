@@ -31,6 +31,8 @@ import {
   type SymptomRecord,
   type VitalSign,
 } from "@/lib/api";
+import { VitalsChart } from "@/components/charts/VitalsChart";
+import { RiskTrendChart } from "@/components/charts/RiskTrendChart";
 
 type CaregiverData = {
   links: CaregiverLink[];
@@ -62,7 +64,7 @@ export function CaregiverDashboard() {
       listAssessments(),
       listEmergencies(),
     ]);
-    setData({ links, alerts, medications, appointments, vitals, symptoms, assessments, emergencies });
+    setData({ links, alerts: alerts.results, medications: medications.results, appointments: appointments.results, vitals: vitals.results, symptoms: symptoms.results, assessments: assessments.results, emergencies: emergencies.results });
   }
 
   useEffect(() => {
@@ -119,6 +121,16 @@ export function CaregiverDashboard() {
           </div>
         </Card>
         <AlertList alerts={data.alerts.slice(0, 5)} onChange={load} onMessage={setMessage} />
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardTitle>Patient health trends</CardTitle>
+          <div className="mt-4"><VitalsChart vitals={data.vitals.slice(0, 20)} /></div>
+        </Card>
+        <Card>
+          <CardTitle>Risk score history</CardTitle>
+          <div className="mt-4"><RiskTrendChart assessments={data.assessments.slice(0, 20)} /></div>
+        </Card>
       </div>
       <div className="grid gap-6">
         {data.links.length ? data.links.map((link) => (
@@ -217,13 +229,13 @@ function AlertList({ alerts, onChange, onMessage }: { alerts: Alert[]; onChange:
       <CardTitle>Alerts</CardTitle>
       <div className="mt-5 grid gap-4">
         {alerts.length ? alerts.map((alert) => (
-          <div key={alert.id} className="rounded-3xl border border-[#d8cebd] bg-white p-5">
+          <div key={alert.id} className={`rounded-3xl border p-5 ${alert.severity === "emergency" ? "border-red-300 bg-red-50" : alert.severity === "high" ? "border-orange-200 bg-orange-50" : "border-[#d8cebd] bg-white"}`}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h3 className="text-xl font-black">{alert.title}</h3>
                 <p className="font-semibold text-[#5b665f]">{alert.patient_name} · {alert.message}</p>
               </div>
-              <Badge className={alert.severity === "emergency" ? "bg-red-100 text-red-800" : ""}>{alert.severity} · {alert.status}</Badge>
+              <Badge className={alert.severity === "emergency" ? "bg-red-100 text-red-800" : alert.severity === "high" ? "bg-orange-100 text-orange-800" : alert.severity === "medium" ? "bg-yellow-100 text-yellow-800" : ""}>{alert.severity} · {alert.status}</Badge>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
               <Button variant="secondary" onClick={() => acknowledge(alert.id)}><Bell aria-hidden /> Acknowledge</Button>

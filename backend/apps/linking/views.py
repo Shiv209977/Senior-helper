@@ -13,6 +13,7 @@ from apps.linking.serializers import AcceptInviteSerializer, CaregiverLinkSerial
 class CaregiverLinkViewSet(viewsets.ModelViewSet):
     serializer_class = CaregiverLinkSerializer
     http_method_names = ["get", "post", "head", "options"]
+    pagination_class = None
 
     def get_queryset(self):
         user = self.request.user

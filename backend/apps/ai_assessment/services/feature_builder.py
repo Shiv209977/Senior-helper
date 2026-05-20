@@ -57,6 +57,8 @@ def build_features_for_patient(patient):
         "emergency_30d": emergency_30d,
         "latest_vitals_id": latest_vitals.id if latest_vitals else None,
         "latest_symptoms_id": latest_symptoms.id if latest_symptoms else None,
+        "latest_vitals_at": latest_vitals.recorded_at.isoformat() if latest_vitals else None,
+        "latest_symptoms_at": latest_symptoms.symptom_date.isoformat() if latest_symptoms else None,
         "has_vitals": latest_vitals is not None,
         "has_symptoms": latest_symptoms is not None,
     }

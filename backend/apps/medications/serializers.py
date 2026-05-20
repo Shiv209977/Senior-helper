@@ -16,6 +16,7 @@ class MedicationSerializer(serializers.ModelSerializer):
             "scheduled_times",
             "start_date",
             "end_date",
+            "grace_period_minutes",
             "instructions",
             "is_active",
             "created_at",
