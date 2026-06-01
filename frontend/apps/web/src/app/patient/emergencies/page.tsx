@@ -121,7 +121,7 @@ function EmergenciesContent() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={2}
-              className="mb-4 w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40"
+              className="mb-4 w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 placeholder:text-muted-foreground/55"
               placeholder="Optional: describe your situation"
             />
             <div className="flex gap-3">

@@ -154,7 +154,7 @@ function CaregiverContent() {
             value={inviteCode}
             onChange={(e) => setInviteCode(e.target.value)}
             placeholder="Enter invite code from patient"
-            className="min-w-0 flex-1 rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40"
+            className="min-w-0 flex-1 rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 placeholder:text-muted-foreground/55"
           />
           <button
             onClick={handleAcceptInvite}
@@ -344,7 +344,7 @@ function CaregiverContent() {
               value={actionNote}
               onChange={(e) => setActionNote(e.target.value)}
               rows={3}
-              className="mb-4 w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40"
+              className="mb-4 w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 placeholder:text-muted-foreground/55"
               placeholder="Optional note…"
             />
             <div className="flex gap-3">

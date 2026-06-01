@@ -8,7 +8,7 @@ import { listMedications, createMedication } from '@/lib/api/medications';
 import type { Medication } from '@/lib/api/types';
 
 const inputClass =
-  'w-full rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40';
+  'w-full rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 placeholder:text-muted-foreground/55';
 const labelClass = 'mb-1 block text-[14px] font-semibold text-ink';
 
 function MedicationsContent() {
@@ -135,7 +135,7 @@ function MedicationsContent() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className={inputClass}
-                  placeholder="e.g. Metformin"
+                  placeholder="e.g. Dolo 650"
                 />
               </div>
               <div>
@@ -145,7 +145,7 @@ function MedicationsContent() {
                   value={dosage}
                   onChange={(e) => setDosage(e.target.value)}
                   className={inputClass}
-                  placeholder="e.g. 500mg"
+                  placeholder="e.g. 650 mg"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">

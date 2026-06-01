@@ -8,7 +8,7 @@ import { register as apiRegister } from '@/lib/api/auth';
 import { useAuthStore } from '@/lib/store/auth';
 
 const inputClass =
-  'w-full rounded-xl border border-border bg-card px-4 py-3.5 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40';
+  'w-full rounded-xl border border-border bg-card px-4 py-3.5 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 placeholder:text-muted-foreground/55';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -101,8 +101,9 @@ export default function RegisterPage() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
+              autoComplete="name"
               className={inputClass}
-              placeholder="Jane Doe"
+              placeholder="Aarav Sharma"
             />
           </div>
 
@@ -113,8 +114,10 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
+              inputMode="email"
               className={inputClass}
-              placeholder="you@example.com"
+              placeholder="you@example.in"
             />
           </div>
 
@@ -125,8 +128,10 @@ export default function RegisterPage() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               required
+              autoComplete="tel"
+              inputMode="tel"
               className={inputClass}
-              placeholder="(555) 123-4567"
+              placeholder="+91 98765 43210"
             />
           </div>
 
@@ -141,6 +146,7 @@ export default function RegisterPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={8}
+                autoComplete="new-password"
                 className={`${inputClass} pr-12`}
                 placeholder="••••••••"
               />

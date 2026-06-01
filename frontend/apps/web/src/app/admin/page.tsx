@@ -8,7 +8,7 @@ import { listUsers, updateUser } from '@/lib/api/admin';
 import type { User } from '@/lib/api/types';
 
 const inputClass =
-  'w-full rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40';
+  'w-full rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 placeholder:text-muted-foreground/55';
 const labelClass = 'mb-1 block text-[14px] font-semibold text-ink';
 const thClass = 'px-6 py-4 text-[14px] font-semibold text-muted-foreground';
 
@@ -208,6 +208,7 @@ function AdminContent() {
                 <label className={labelClass}>Phone</label>
                 <input
                   type="tel"
+                  inputMode="tel"
                   value={editPhone}
                   onChange={(e) => setEditPhone(e.target.value)}
                   className={inputClass}

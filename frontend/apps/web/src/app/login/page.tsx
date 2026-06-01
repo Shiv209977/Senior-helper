@@ -8,7 +8,7 @@ import { login as apiLogin } from '@/lib/api/auth';
 import { useAuthStore } from '@/lib/store/auth';
 
 const inputClass =
-  'w-full rounded-xl border border-border bg-card px-4 py-3.5 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40';
+  'w-full rounded-xl border border-border bg-card px-4 py-3.5 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 placeholder:text-muted-foreground/55';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -76,8 +76,10 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
+              inputMode="email"
               className={inputClass}
-              placeholder="you@example.com"
+              placeholder="you@example.in"
             />
           </div>
 
@@ -89,6 +91,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete="current-password"
                 className={`${inputClass} pr-12`}
                 placeholder="••••••••"
               />

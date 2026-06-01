@@ -77,8 +77,8 @@ function Navbar() {
         </div>
 
         <div className="hidden items-center gap-4 md:flex">
-          <a href="tel:+18005552273" className="flex items-center gap-1.5 text-[15px] font-semibold text-teal-deep">
-            <Phone className="h-4 w-4" /> 1-800-555-CARE
+          <a href="tel:18001231234" className="flex items-center gap-1.5 text-[15px] font-semibold text-teal-deep">
+            <Phone className="h-4 w-4" /> 1800 123 1234
           </a>
           <Link
             href="/login"
@@ -156,7 +156,7 @@ function Hero() {
               <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <a
-              href="tel:+18005552273"
+              href="tel:18001231234"
               className="inline-flex items-center gap-2.5 rounded-full border-2 border-teal bg-white/60 px-8 py-4 text-lg font-semibold text-teal transition-colors hover:bg-teal-soft"
             >
               <Phone className="h-5 w-5" /> Talk to a Care Guide
@@ -349,7 +349,7 @@ function Testimonial() {
               M
             </span>
             <div>
-              <p className="font-semibold text-ink">Margaret R.</p>
+              <p className="font-semibold text-ink">Lakshmi Iyer</p>
               <div className="mt-0.5 flex gap-0.5">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star key={i} className="h-4 w-4 fill-gold text-gold" />
@@ -422,16 +422,16 @@ function Footer() {
           <h4 className="font-serif text-xl text-ink">Contact Us</h4>
           <ul className="mt-4 space-y-3 text-[15px] text-muted-foreground">
             <li className="flex items-center gap-2.5">
-              <Phone className="h-4 w-4 shrink-0 text-teal" /> 1-800-555-CARE
+              <Phone className="h-4 w-4 shrink-0 text-teal" /> 1800 123 1234
             </li>
             <li className="flex items-center gap-2.5">
-              <Mail className="h-4 w-4 shrink-0 text-teal" /> hello@lifewaycares.org
+              <Mail className="h-4 w-4 shrink-0 text-teal" /> care@lifeway.in
             </li>
             <li className="flex items-start gap-2.5">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-teal" /> 123 Healing Way, Peaceful Valley, CA
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-teal" /> 12 Residency Road, Bengaluru, Karnataka 560025
             </li>
             <li className="flex items-center gap-2.5">
-              <Check className="h-4 w-4 shrink-0 text-teal" /> Mon–Fri 8AM–8PM · Sat–Sun 9AM–5PM
+              <Check className="h-4 w-4 shrink-0 text-teal" /> Mon–Sat 8AM–8PM IST · Sun 9AM–5PM IST
             </li>
           </ul>
         </div>
