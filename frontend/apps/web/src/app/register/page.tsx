@@ -7,7 +7,8 @@ import { Heart, Eye, EyeOff } from 'lucide-react';
 import { register as apiRegister } from '@/lib/api/auth';
 import { useAuthStore } from '@/lib/store/auth';
 
-const TEAL = '#1B7A6E';
+const inputClass =
+  'w-full rounded-xl border border-border bg-card px-4 py-3.5 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -44,24 +45,29 @@ export default function RegisterPage() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{ backgroundColor: '#FDF8F4' }}
-    >
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-lg p-8 md:p-10">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <Heart className="w-9 h-9" style={{ color: TEAL }} fill={TEAL} />
-            <span className="text-2xl font-bold" style={{ color: TEAL }}>
+    <div className="grain relative flex min-h-screen items-center justify-center overflow-hidden bg-cream p-4">
+      <div className="bloom -left-24 -top-24 h-96 w-96 bg-teal-soft" />
+      <div className="bloom -bottom-24 right-[-6rem] h-[26rem] w-[26rem]" style={{ background: 'hsl(258 44% 90%)' }} />
+
+      <div className="shadow-lift animate-rise relative w-full max-w-md rounded-[2rem] border border-border bg-card p-8 md:p-10">
+        <div className="mb-8 text-center">
+          <Link href="/" className="mb-6 inline-flex items-center gap-2.5">
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-teal-soft">
+              <Heart className="h-5 w-5 text-teal" fill="currentColor" />
+            </span>
+            <span className="font-serif text-2xl font-semibold tracking-tight text-teal-deep">
               Lifeway
+              <span className="ml-1 align-middle font-sans text-[10px] font-semibold uppercase tracking-[0.18em] text-lavender">
+                Care
+              </span>
             </span>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Create Your Account</h1>
-          <p className="text-gray-500 text-[16px]">Start your care journey today</p>
+          <h1 className="mb-2 text-3xl">Create Your Account</h1>
+          <p className="text-[16px] text-muted-foreground">Start your care journey today</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[15px]">
+          <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
             {error}
           </div>
         )}
@@ -69,19 +75,18 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Role selector */}
           <div>
-            <label className="block text-[15px] font-semibold text-gray-700 mb-2">I am a…</label>
+            <label className="mb-2 block text-[15px] font-semibold text-ink">I am a…</label>
             <div className="grid grid-cols-2 gap-3">
               {(['patient', 'caregiver'] as const).map((r) => (
                 <button
                   key={r}
                   type="button"
                   onClick={() => setRole(r)}
-                  className="px-4 py-3 rounded-xl border-2 text-[16px] font-semibold capitalize transition"
-                  style={{
-                    borderColor: role === r ? TEAL : '#E5E7EB',
-                    backgroundColor: role === r ? '#E8F5F2' : 'white',
-                    color: role === r ? TEAL : '#6B7280',
-                  }}
+                  className={`rounded-xl border-2 px-4 py-3 text-[16px] font-semibold capitalize transition-colors ${
+                    role === r
+                      ? 'border-teal bg-teal-soft text-teal-deep'
+                      : 'border-border bg-card text-muted-foreground hover:border-teal/40'
+                  }`}
                 >
                   {r}
                 </button>
@@ -90,44 +95,44 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-[15px] font-semibold text-gray-700 mb-2">Full Name</label>
+            <label className="mb-2 block text-[15px] font-semibold text-ink">Full Name</label>
             <input
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
-              className="w-full px-4 py-3.5 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2 focus:border-transparent"
+              className={inputClass}
               placeholder="Jane Doe"
             />
           </div>
 
           <div>
-            <label className="block text-[15px] font-semibold text-gray-700 mb-2">Email</label>
+            <label className="mb-2 block text-[15px] font-semibold text-ink">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3.5 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2 focus:border-transparent"
+              className={inputClass}
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label className="block text-[15px] font-semibold text-gray-700 mb-2">Phone</label>
+            <label className="mb-2 block text-[15px] font-semibold text-ink">Phone</label>
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               required
-              className="w-full px-4 py-3.5 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2 focus:border-transparent"
+              className={inputClass}
               placeholder="(555) 123-4567"
             />
           </div>
 
           <div>
-            <label className="block text-[15px] font-semibold text-gray-700 mb-2">
-              Password <span className="font-normal text-gray-400">(min 8 characters)</span>
+            <label className="mb-2 block text-[15px] font-semibold text-ink">
+              Password <span className="font-normal text-muted-foreground">(min 8 characters)</span>
             </label>
             <div className="relative">
               <input
@@ -136,15 +141,16 @@ export default function RegisterPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={8}
-                className="w-full px-4 py-3.5 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2 focus:border-transparent pr-12"
+                className={`${inputClass} pr-12`}
                 placeholder="••••••••"
               />
               <button
                 type="button"
                 onClick={() => setShowPw(!showPw)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                aria-label={showPw ? 'Hide password' : 'Show password'}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground transition-colors hover:text-ink"
               >
-                {showPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPw ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
           </div>
@@ -152,16 +158,15 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-xl text-white text-[17px] font-semibold transition hover:opacity-90 disabled:opacity-50"
-            style={{ backgroundColor: TEAL }}
+            className="w-full rounded-full bg-teal py-3.5 text-[17px] font-semibold text-white shadow-soft transition-all hover:bg-teal-deep hover:shadow-lift disabled:opacity-50"
           >
             {loading ? 'Creating account…' : 'Get Started'}
           </button>
         </form>
 
-        <p className="text-center mt-8 text-[15px] text-gray-500">
+        <p className="mt-8 text-center text-[15px] text-muted-foreground">
           Already have an account?{' '}
-          <Link href="/login" className="font-semibold hover:underline" style={{ color: TEAL }}>
+          <Link href="/login" className="font-semibold text-teal hover:underline">
             Sign In
           </Link>
         </p>

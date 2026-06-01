@@ -7,7 +7,16 @@ import { Shield, Search, Save, X, UserCheck, UserX } from 'lucide-react';
 import { listUsers, updateUser } from '@/lib/api/admin';
 import type { User } from '@/lib/api/types';
 
-const TEAL = '#1B7A6E';
+const inputClass =
+  'w-full rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40';
+const labelClass = 'mb-1 block text-[14px] font-semibold text-ink';
+const thClass = 'px-6 py-4 text-[14px] font-semibold text-muted-foreground';
+
+const ROLE_PILL: Record<string, string> = {
+  admin: 'bg-lavender-soft text-lavender-deep',
+  caregiver: 'bg-teal-soft text-teal-deep',
+  patient: 'bg-gold/20 text-ink',
+};
 
 function AdminContent() {
   const [users, setUsers] = useState<User[]>([]);
@@ -71,15 +80,18 @@ function AdminContent() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-          <Shield className="w-8 h-8" style={{ color: TEAL }} /> User Management
+      <div className="animate-rise mb-8">
+        <h1 className="flex items-center gap-3 text-4xl">
+          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-teal-soft">
+            <Shield className="h-6 w-6 text-teal" />
+          </span>
+          User Management
         </h1>
-        <p className="text-gray-500 text-lg mt-1">{totalCount} total users</p>
+        <p className="mt-2 text-xl text-muted-foreground">{totalCount} total users</p>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[15px]">
+        <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
           {error}
         </div>
       )}
@@ -87,61 +99,39 @@ function AdminContent() {
       {loading ? (
         <div className="flex justify-center py-20">
           <div
-            className="w-10 h-10 border-4 border-t-transparent rounded-full"
-            style={{
-              borderColor: TEAL,
-              borderTopColor: 'transparent',
-              animation: 'spin 1s linear infinite',
-            }}
+            className="h-11 w-11 rounded-full border-4 border-teal-soft border-t-teal"
+            style={{ animation: 'spin 0.9s linear infinite' }}
           />
         </div>
       ) : (
         <>
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+          <div className="animate-rise overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50">
-                    <th className="px-6 py-4 text-[14px] font-semibold text-gray-500">Name</th>
-                    <th className="px-6 py-4 text-[14px] font-semibold text-gray-500">Email</th>
-                    <th className="px-6 py-4 text-[14px] font-semibold text-gray-500">Role</th>
-                    <th className="px-6 py-4 text-[14px] font-semibold text-gray-500">Phone</th>
-                    <th className="px-6 py-4 text-[14px] font-semibold text-gray-500">Status</th>
-                    <th className="px-6 py-4 text-[14px] font-semibold text-gray-500">Actions</th>
+                  <tr className="border-b border-border bg-muted/60">
+                    <th className={thClass}>Name</th>
+                    <th className={thClass}>Email</th>
+                    <th className={thClass}>Role</th>
+                    <th className={thClass}>Phone</th>
+                    <th className={thClass}>Status</th>
+                    <th className={thClass}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.map((u) => (
-                    <tr key={u.id} className="border-b border-gray-50 hover:bg-gray-50 transition">
-                      <td className="px-6 py-4 text-[15px] font-medium text-gray-800">
-                        {u.full_name}
-                      </td>
-                      <td className="px-6 py-4 text-[15px] text-gray-500">{u.email}</td>
+                    <tr key={u.id} className="border-b border-border/60 transition-colors hover:bg-muted/40">
+                      <td className="px-6 py-4 text-[15px] font-medium text-ink">{u.full_name}</td>
+                      <td className="px-6 py-4 text-[15px] text-muted-foreground">{u.email}</td>
                       <td className="px-6 py-4">
-                        <span
-                          className="px-2 py-0.5 rounded-full text-[12px] font-bold capitalize"
-                          style={{
-                            backgroundColor:
-                              u.role === 'admin'
-                                ? '#F3EFF8'
-                                : u.role === 'caregiver'
-                                  ? '#E8F5F2'
-                                  : '#FEF9C3',
-                            color:
-                              u.role === 'admin'
-                                ? '#7B68AE'
-                                : u.role === 'caregiver'
-                                  ? TEAL
-                                  : '#854D0E',
-                          }}
-                        >
+                        <span className={`rounded-full px-2.5 py-0.5 text-[12px] font-bold capitalize ${ROLE_PILL[u.role] ?? ROLE_PILL.patient}`}>
                           {u.role}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-[15px] text-gray-500">{u.phone || '—'}</td>
+                      <td className="px-6 py-4 text-[15px] text-muted-foreground">{u.phone || '—'}</td>
                       <td className="px-6 py-4">
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[12px] font-bold ${u.is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}
+                          className={`rounded-full px-2.5 py-0.5 text-[12px] font-bold ${u.is_active ? 'bg-teal-soft text-teal-deep' : 'bg-coral-soft text-coral'}`}
                         >
                           {u.is_active ? 'Active' : 'Inactive'}
                         </span>
@@ -150,20 +140,20 @@ function AdminContent() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleEdit(u)}
-                            className="p-1.5 rounded-lg hover:bg-gray-100 transition text-gray-400 hover:text-gray-600"
+                            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-ink"
                             title="Edit"
                           >
-                            <Search className="w-4 h-4" />
+                            <Search className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => handleToggleActive(u)}
-                            className="p-1.5 rounded-lg hover:bg-gray-100 transition"
+                            className="rounded-lg p-1.5 transition-colors hover:bg-muted"
                             title={u.is_active ? 'Deactivate' : 'Activate'}
                           >
                             {u.is_active ? (
-                              <UserX className="w-4 h-4 text-red-400" />
+                              <UserX className="h-4 w-4 text-coral" />
                             ) : (
-                              <UserCheck className="w-4 h-4 text-green-500" />
+                              <UserCheck className="h-4 w-4 text-teal" />
                             )}
                           </button>
                         </div>
@@ -176,16 +166,14 @@ function AdminContent() {
           </div>
 
           {totalPages > 1 && (
-            <div className="flex justify-center gap-2 mt-6">
+            <div className="mt-6 flex justify-center gap-2">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                 <button
                   key={p}
                   onClick={() => setPage(p)}
-                  className="w-10 h-10 rounded-lg font-semibold text-[15px] transition"
-                  style={{
-                    backgroundColor: page === p ? TEAL : '#F3F4F6',
-                    color: page === p ? 'white' : '#6B7280',
-                  }}
+                  className={`h-10 w-10 rounded-xl text-[15px] font-semibold transition-colors ${
+                    page === p ? 'bg-teal text-white' : 'bg-muted text-muted-foreground hover:bg-teal-soft hover:text-teal-deep'
+                  }`}
                 >
                   {p}
                 </button>
@@ -196,44 +184,42 @@ function AdminContent() {
       )}
 
       {editUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm">
+          <div className="shadow-lift relative w-full max-w-md rounded-[1.75rem] bg-card p-8">
             <button
               onClick={() => setEditUser(null)}
-              className="absolute top-4 right-4 p-1 text-gray-400"
+              aria-label="Close"
+              className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-ink"
             >
-              <X className="w-6 h-6" />
+              <X className="h-6 w-6" />
             </button>
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Edit User</h2>
+            <h2 className="mb-6 text-3xl">Edit User</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-[14px] font-semibold text-gray-700 mb-1">
-                  Full Name
-                </label>
+                <label className={labelClass}>Full Name</label>
                 <input
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                  className={inputClass}
                 />
               </div>
               <div>
-                <label className="block text-[14px] font-semibold text-gray-700 mb-1">Phone</label>
+                <label className={labelClass}>Phone</label>
                 <input
                   type="tel"
                   value={editPhone}
                   onChange={(e) => setEditPhone(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                  className={inputClass}
                 />
               </div>
-              <div className="text-sm text-gray-400">Email and role cannot be changed.</div>
+              <div className="text-sm text-muted-foreground">Email and role cannot be changed.</div>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full py-3 rounded-xl text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 transition"
-                style={{ backgroundColor: TEAL }}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-teal py-3 font-semibold text-white transition-all hover:bg-teal-deep disabled:opacity-50"
               >
-                <Save className="w-5 h-5" /> {saving ? 'Saving…' : 'Save'}
+                <Save className="h-5 w-5" /> {saving ? 'Saving…' : 'Save'}
               </button>
             </div>
           </div>

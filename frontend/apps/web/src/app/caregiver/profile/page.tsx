@@ -8,7 +8,9 @@ import { listCaregiverProfiles, updateCaregiverProfile } from '@/lib/api/profile
 import { useAuthStore } from '@/lib/store/auth';
 import type { CaregiverProfile } from '@/lib/api/types';
 
-const TEAL = '#1B7A6E';
+const inputClass =
+  'w-full rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40';
+const labelClass = 'mb-1 block text-[14px] font-semibold text-ink';
 
 function CaregiverProfileContent() {
   const { user } = useAuthStore();
@@ -72,12 +74,8 @@ function CaregiverProfileContent() {
     return (
       <div className="flex justify-center py-20">
         <div
-          className="w-10 h-10 border-4 border-t-transparent rounded-full"
-          style={{
-            borderColor: TEAL,
-            borderTopColor: 'transparent',
-            animation: 'spin 1s linear infinite',
-          }}
+          className="h-11 w-11 rounded-full border-4 border-teal-soft border-t-teal"
+          style={{ animation: 'spin 0.9s linear infinite' }}
         />
         <style jsx global>{`
           @keyframes spin {
@@ -92,78 +90,80 @@ function CaregiverProfileContent() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-8">
-        <User className="w-8 h-8" style={{ color: TEAL }} /> My Profile
+      <h1 className="animate-rise mb-8 flex items-center gap-3 text-4xl">
+        <span className="grid h-11 w-11 place-items-center rounded-2xl bg-teal-soft">
+          <User className="h-6 w-6 text-teal" />
+        </span>
+        My Profile
       </h1>
       {error && (
-        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[15px]">
+        <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
           {error}
         </div>
       )}
       {success && (
-        <div className="mb-6 p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 text-[15px]">
+        <div className="mb-6 rounded-2xl border border-teal/20 bg-teal-soft px-5 py-4 text-[15px] font-medium text-teal-deep">
           {success}
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-8 space-y-6">
-        <div className="pb-4 border-b border-gray-100">
-          <p className="text-[13px] text-gray-400">Full Name</p>
-          <p className="font-semibold text-gray-800 text-[16px]">
+      <div className="animate-rise space-y-6 rounded-[1.5rem] border border-border bg-card p-6 shadow-soft md:p-8">
+        <div className="border-b border-border pb-4">
+          <p className="text-[13px] text-muted-foreground">Full Name</p>
+          <p className="text-[16px] font-semibold text-ink">
             {profile?.full_name ?? user?.full_name}
           </p>
-          <p className="text-[13px] text-gray-400 mt-2">Email</p>
-          <p className="text-gray-800">{profile?.email ?? user?.email}</p>
+          <p className="mt-2 text-[13px] text-muted-foreground">Email</p>
+          <p className="text-ink">{profile?.email ?? user?.email}</p>
         </div>
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-[14px] font-semibold text-gray-700 mb-1">
+            <label className={labelClass}>
               Relationship to Patient
             </label>
             <input
               type="text"
               value={relationship}
               onChange={(e) => setRelationship(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+              className={inputClass}
             />
           </div>
           <div>
-            <label className="block text-[14px] font-semibold text-gray-700 mb-1">Phone</label>
+            <label className={labelClass}>Phone</label>
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+              className={inputClass}
             />
           </div>
         </div>
         <div>
-          <label className="block text-[14px] font-semibold text-gray-700 mb-1">Address</label>
+          <label className={labelClass}>Address</label>
           <input
             type="text"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+            className={inputClass}
           />
         </div>
         <div>
-          <label className="block text-[14px] font-semibold text-gray-700 mb-1">
+          <label className={labelClass}>
             Availability Notes
           </label>
           <textarea
             value={availability}
             onChange={(e) => setAvailability(e.target.value)}
             rows={3}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2 resize-none"
+            className={`${inputClass} resize-none`}
           />
         </div>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-[16px] hover:opacity-90 disabled:opacity-50 transition"
-          style={{ backgroundColor: TEAL }}
+          className="flex items-center gap-2 rounded-full bg-teal px-6 py-3 text-[16px] font-semibold text-white shadow-soft transition-all hover:bg-teal-deep hover:shadow-lift disabled:opacity-50"
         >
-          <Save className="w-5 h-5" /> {saving ? 'Saving…' : 'Save Changes'}
+          <Save className="h-5 w-5" /> {saving ? 'Saving…' : 'Save Changes'}
         </button>
       </div>
     </div>

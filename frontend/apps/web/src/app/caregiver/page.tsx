@@ -10,8 +10,12 @@ import { listEmergencies, acknowledgeEmergency, resolveEmergency } from '@/lib/a
 import { runAssessment } from '@/lib/api/ai';
 import type { CaregiverLink, Alert, EmergencyRequest, AIRiskAssessment } from '@/lib/api/types';
 
-const TEAL = '#1B7A6E';
-const LAVENDER = '#7B68AE';
+const SEVERITY: Record<string, { chip: string; text: string }> = {
+  low: { chip: 'bg-teal-soft text-teal-deep', text: 'text-teal-deep' },
+  medium: { chip: 'bg-gold/20 text-ink', text: 'text-ink' },
+  high: { chip: 'bg-coral-soft text-coral', text: 'text-coral' },
+  emergency: { chip: 'bg-coral text-white', text: 'text-coral' },
+};
 
 function CaregiverContent() {
   const [links, setLinks] = useState<CaregiverLink[]>([]);
@@ -108,23 +112,12 @@ function CaregiverContent() {
   );
   const openAlerts = alerts.filter((a) => a.status === 'open' || a.status === 'acknowledged');
 
-  const severityColors: Record<string, { bg: string; text: string }> = {
-    low: { bg: '#F0FDF4', text: '#166534' },
-    medium: { bg: '#FEF9C3', text: '#854D0E' },
-    high: { bg: '#FEF2F2', text: '#991B1B' },
-    emergency: { bg: '#FEE2E2', text: '#DC2626' },
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
         <div
-          className="w-10 h-10 border-4 border-t-transparent rounded-full"
-          style={{
-            borderColor: TEAL,
-            borderTopColor: 'transparent',
-            animation: 'spin 1s linear infinite',
-          }}
+          className="h-11 w-11 rounded-full border-4 border-teal-soft border-t-teal"
+          style={{ animation: 'spin 0.9s linear infinite' }}
         />
         <style jsx global>{`
           @keyframes spin {
@@ -139,35 +132,34 @@ function CaregiverContent() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Caregiver Dashboard</h1>
-        <p className="text-lg text-gray-500">Monitor and support your linked patients</p>
+      <div className="animate-rise mb-8">
+        <h1 className="mb-1.5 text-4xl">Caregiver Dashboard</h1>
+        <p className="text-xl text-muted-foreground">Monitor and support your linked patients</p>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[15px]">
+        <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
           {error}
         </div>
       )}
 
       {/* Accept invite */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-6">
-        <h2 className="font-bold text-gray-900 text-lg mb-3 flex items-center gap-2">
-          <KeyRound className="w-5 h-5" style={{ color: TEAL }} /> Accept Invite Code
+      <div className="animate-rise mb-6 rounded-2xl border border-border bg-card p-6 shadow-soft">
+        <h2 className="mb-3 flex items-center gap-2 font-serif text-xl text-ink">
+          <KeyRound className="h-5 w-5 text-teal" /> Accept Invite Code
         </h2>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <input
             type="text"
             value={inviteCode}
             onChange={(e) => setInviteCode(e.target.value)}
             placeholder="Enter invite code from patient"
-            className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+            className="min-w-0 flex-1 rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40"
           />
           <button
             onClick={handleAcceptInvite}
             disabled={accepting || !inviteCode.trim()}
-            className="px-6 py-3 rounded-xl text-white font-semibold hover:opacity-90 disabled:opacity-50 transition"
-            style={{ backgroundColor: TEAL }}
+            className="rounded-full bg-teal px-6 py-3 font-semibold text-white shadow-soft transition-all hover:bg-teal-deep hover:shadow-lift disabled:opacity-50"
           >
             {accepting ? 'Accepting…' : 'Accept'}
           </button>
@@ -177,33 +169,33 @@ function CaregiverContent() {
       {/* Active emergencies */}
       {activeEmergencies.length > 0 && (
         <div className="mb-6">
-          <h2 className="font-bold text-gray-900 text-lg mb-3 flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-500" /> Active Emergencies
+          <h2 className="mb-3 flex items-center gap-2 font-serif text-xl text-ink">
+            <AlertTriangle className="h-5 w-5 text-coral" /> Active Emergencies
           </h2>
           <div className="space-y-3">
             {activeEmergencies.map((e) => (
-              <div key={e.id} className="bg-red-50 rounded-2xl border border-red-200 p-5">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="font-bold text-red-700 text-[17px]">🚨 {e.patient_name}</p>
-                  <span className="px-3 py-1 rounded-full text-[12px] font-bold capitalize bg-red-100 text-red-700">
+              <div key={e.id} className="rounded-2xl border border-coral/30 bg-coral-soft p-5 shadow-soft">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-[17px] font-bold text-coral">🚨 {e.patient_name}</p>
+                  <span className="rounded-full bg-coral px-3 py-1 text-[12px] font-bold capitalize text-white">
                     {e.status}
                   </span>
                 </div>
-                {e.message && <p className="text-red-600 mb-3">{e.message}</p>}
+                {e.message && <p className="mb-3 text-ink">{e.message}</p>}
                 <div className="flex gap-2">
                   {e.status === 'active' && (
                     <button
                       onClick={() =>
                         setNoteModal({ type: 'emergency', id: e.id, action: 'acknowledge' })
                       }
-                      className="px-4 py-2 rounded-xl bg-yellow-500 text-white font-semibold text-[14px] hover:bg-yellow-600 transition"
+                      className="rounded-full bg-gold px-4 py-2 text-[14px] font-semibold text-ink transition hover:brightness-95"
                     >
                       Acknowledge
                     </button>
                   )}
                   <button
                     onClick={() => setNoteModal({ type: 'emergency', id: e.id, action: 'resolve' })}
-                    className="px-4 py-2 rounded-xl bg-green-600 text-white font-semibold text-[14px] hover:bg-green-700 transition"
+                    className="rounded-full bg-teal px-4 py-2 text-[14px] font-semibold text-white transition hover:bg-teal-deep"
                   >
                     Resolve
                   </button>
@@ -215,40 +207,39 @@ function CaregiverContent() {
       )}
 
       {/* Linked patients */}
-      <h2 className="font-bold text-gray-900 text-lg mb-3 flex items-center gap-2">
-        <Users className="w-5 h-5" style={{ color: TEAL }} /> Linked Patients
+      <h2 className="mb-3 flex items-center gap-2 font-serif text-xl text-ink">
+        <Users className="h-5 w-5 text-teal" /> Linked Patients
       </h2>
       {links.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
-          <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-          <p className="text-gray-400 text-lg">
+        <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-soft">
+          <span className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-teal-soft">
+            <Users className="h-6 w-6 text-teal" />
+          </span>
+          <p className="text-lg text-muted-foreground">
             No patients linked yet. Accept an invite code above.
           </p>
         </div>
       ) : (
-        <div className="grid md:grid-cols-2 gap-4 mb-8">
+        <div className="mb-8 grid gap-4 md:grid-cols-2">
           {links.map((l) => (
             <div
               key={l.id}
-              className="bg-white rounded-2xl border border-gray-100 p-5 flex items-center gap-4"
+              className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft"
             >
-              <div
-                className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
-                style={{ backgroundColor: TEAL }}
-              >
+              <div className="grid h-12 w-12 place-items-center rounded-full bg-teal font-bold text-white">
                 {l.patient_name.charAt(0)}
               </div>
               <div className="flex-1">
-                <p className="font-bold text-gray-800 text-[17px]">{l.patient_name}</p>
-                <p className="text-sm text-gray-400">Linked Patient</p>
+                <p className="text-[17px] font-bold text-ink">{l.patient_name}</p>
+                <p className="text-sm text-muted-foreground">Linked Patient</p>
               </div>
               <button
                 onClick={() => handleRunAI(l.patient)}
                 disabled={aiRunning}
-                className="p-2 rounded-lg hover:bg-purple-50 transition"
+                className="rounded-xl p-2.5 text-lavender transition-colors hover:bg-lavender-soft disabled:opacity-50"
                 title="Run AI Check"
               >
-                <Brain className="w-5 h-5" style={{ color: LAVENDER }} />
+                <Brain className="h-5 w-5" />
               </button>
             </div>
           ))}
@@ -257,88 +248,73 @@ function CaregiverContent() {
 
       {/* AI Result */}
       {aiResult && (
-        <div className="mb-6 bg-white rounded-2xl border-2 p-6" style={{ borderColor: LAVENDER }}>
-          <h3 className="font-bold text-gray-900 text-lg mb-2">
-            AI Assessment: {aiResult.patient_name}
-          </h3>
-          <div className="flex items-center gap-4 mb-3">
-            <span
-              className="text-3xl font-bold"
-              style={{ color: severityColors[aiResult.risk_category]?.text }}
-            >
+        <div className="animate-rise mb-6 rounded-[1.5rem] border-2 border-lavender/40 bg-card p-6 shadow-soft">
+          <h3 className="mb-2 font-serif text-xl text-ink">AI Assessment: {aiResult.patient_name}</h3>
+          <div className="mb-3 flex items-center gap-4">
+            <span className={`font-serif text-3xl font-semibold ${SEVERITY[aiResult.risk_category]?.text}`}>
               {aiResult.risk_score}
             </span>
-            <span
-              className="px-3 py-1 rounded-full text-[14px] font-bold uppercase"
-              style={{
-                backgroundColor: severityColors[aiResult.risk_category]?.bg,
-                color: severityColors[aiResult.risk_category]?.text,
-              }}
-            >
+            <span className={`rounded-full px-3 py-1 text-[14px] font-bold uppercase tracking-wide ${SEVERITY[aiResult.risk_category]?.chip}`}>
               {aiResult.risk_category}
             </span>
           </div>
-          <ul className="space-y-1 mb-3">
+          <ul className="mb-3 space-y-1">
             {aiResult.reasons.map((r, i) => (
-              <li key={i} className="text-[15px] text-gray-600">
+              <li key={i} className="text-[15px] text-muted-foreground">
                 • {r}
               </li>
             ))}
           </ul>
-          <p className="text-[14px] p-3 rounded-xl bg-yellow-50 border border-yellow-200 text-yellow-800">
+          {/* Disclaimer — ALWAYS shown */}
+          <p className="rounded-2xl border border-gold/30 bg-gold/10 p-3 text-[14px] text-ink">
             {aiResult.disclaimer}
           </p>
         </div>
       )}
 
       {/* Alerts */}
-      <h2 className="font-bold text-gray-900 text-lg mb-3 flex items-center gap-2">
-        <AlertTriangle className="w-5 h-5" style={{ color: '#D4686A' }} /> Patient Alerts
+      <h2 className="mb-3 flex items-center gap-2 font-serif text-xl text-ink">
+        <AlertTriangle className="h-5 w-5 text-coral" /> Patient Alerts
       </h2>
       {openAlerts.length === 0 ? (
-        <p className="text-gray-400 py-4">No open alerts</p>
+        <p className="py-4 text-muted-foreground">No open alerts</p>
       ) : (
-        <div className="space-y-3 mb-6">
+        <div className="mb-6 space-y-3">
           {openAlerts.map((a) => {
-            const sc = severityColors[a.severity] ?? severityColors.low;
+            const sc = SEVERITY[a.severity] ?? SEVERITY.low;
             return (
-              <div key={a.id} className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div key={a.id} className="rounded-2xl border border-border bg-card p-5 shadow-soft">
                 <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 mt-0.5" style={{ color: sc.text }} />
+                  <AlertTriangle className={`mt-0.5 h-5 w-5 ${sc.text}`} />
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <p className="font-semibold text-[16px]" style={{ color: sc.text }}>
-                        {a.title}
-                      </p>
-                      <span
-                        className="px-2 py-0.5 rounded-full text-[11px] font-bold uppercase"
-                        style={{ backgroundColor: sc.bg, color: sc.text }}
-                      >
+                      <p className={`text-[16px] font-semibold ${sc.text}`}>{a.title}</p>
+                      <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide ${sc.chip}`}>
                         {a.severity}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">{a.message}</p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="mt-1 text-sm text-muted-foreground">{a.message}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
                       {a.patient_name} · {a.alert_type}
                     </p>
                   </div>
                 </div>
-                <div className="flex gap-2 mt-3 justify-end">
+                <div className="mt-3 flex justify-end gap-2">
                   {a.status === 'open' && (
                     <button
                       onClick={() =>
                         setNoteModal({ type: 'alert', id: a.id, action: 'acknowledge' })
                       }
-                      className="px-4 py-2 rounded-lg text-[13px] font-semibold bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition"
+                      className="rounded-full bg-gold/20 px-4 py-2 text-[13px] font-semibold text-ink transition-colors hover:bg-gold/30"
                     >
                       Acknowledge
                     </button>
                   )}
                   <button
                     onClick={() => setNoteModal({ type: 'alert', id: a.id, action: 'resolve' })}
-                    className="px-4 py-2 rounded-lg text-[13px] font-semibold bg-green-100 text-green-700 hover:bg-green-200 transition flex items-center gap-1"
+                    className="flex items-center gap-1 rounded-full bg-teal-soft px-4 py-2 text-[13px] font-semibold text-teal-deep transition-colors hover:bg-teal hover:text-white"
                   >
-                    <CheckCircle className="w-4 h-4" /> Resolve
+                    <CheckCircle className="h-4 w-4" /> Resolve
                   </button>
                 </div>
               </div>
@@ -349,25 +325,26 @@ function CaregiverContent() {
 
       {/* Action note modal */}
       {noteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm">
+          <div className="shadow-lift relative w-full max-w-md rounded-[1.75rem] bg-card p-8">
             <button
               onClick={() => {
                 setNoteModal(null);
                 setActionNote('');
               }}
-              className="absolute top-4 right-4 p-1 text-gray-400"
+              aria-label="Close"
+              className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-ink"
             >
-              <X className="w-6 h-6" />
+              <X className="h-6 w-6" />
             </button>
-            <h2 className="text-xl font-bold text-gray-900 mb-4 capitalize">
+            <h2 className="mb-4 text-2xl capitalize">
               {noteModal.action} {noteModal.type}
             </h2>
             <textarea
               value={actionNote}
               onChange={(e) => setActionNote(e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2 resize-none mb-4"
+              className="mb-4 w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40"
               placeholder="Optional note…"
             />
             <div className="flex gap-3">
@@ -376,15 +353,18 @@ function CaregiverContent() {
                   setNoteModal(null);
                   setActionNote('');
                 }}
-                className="flex-1 py-3 rounded-xl border-2 border-gray-200 font-semibold text-gray-600"
+                className="flex-1 rounded-full border-2 border-border py-3 font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-ink"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAction}
                 disabled={actionLoading}
-                className="flex-1 py-3 rounded-xl text-white font-semibold hover:opacity-90 disabled:opacity-50"
-                style={{ backgroundColor: noteModal.action === 'resolve' ? '#16A34A' : '#EAB308' }}
+                className={`flex-1 rounded-full py-3 font-semibold transition-all disabled:opacity-50 ${
+                  noteModal.action === 'resolve'
+                    ? 'bg-teal text-white hover:bg-teal-deep'
+                    : 'bg-gold text-ink hover:brightness-95'
+                }`}
               >
                 {actionLoading ? 'Saving…' : 'Confirm'}
               </button>

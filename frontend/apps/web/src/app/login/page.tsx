@@ -7,7 +7,8 @@ import { Heart, Eye, EyeOff } from 'lucide-react';
 import { login as apiLogin } from '@/lib/api/auth';
 import { useAuthStore } from '@/lib/store/auth';
 
-const TEAL = '#1B7A6E';
+const inputClass =
+  'w-full rounded-xl border border-border bg-card px-4 py-3.5 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,59 +41,64 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{ backgroundColor: '#FDF8F4' }}
-    >
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-lg p-8 md:p-10">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <Heart className="w-9 h-9" style={{ color: TEAL }} fill={TEAL} />
-            <span className="text-2xl font-bold" style={{ color: TEAL }}>
+    <div className="grain relative flex min-h-screen items-center justify-center overflow-hidden bg-cream p-4">
+      <div className="bloom -left-24 -top-24 h-96 w-96 bg-teal-soft" />
+      <div className="bloom -bottom-24 right-[-6rem] h-[26rem] w-[26rem]" style={{ background: 'hsl(258 44% 90%)' }} />
+
+      <div className="shadow-lift animate-rise relative w-full max-w-md rounded-[2rem] border border-border bg-card p-8 md:p-10">
+        <div className="mb-8 text-center">
+          <Link href="/" className="mb-6 inline-flex items-center gap-2.5">
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-teal-soft">
+              <Heart className="h-5 w-5 text-teal" fill="currentColor" />
+            </span>
+            <span className="font-serif text-2xl font-semibold tracking-tight text-teal-deep">
               Lifeway
+              <span className="ml-1 align-middle font-sans text-[10px] font-semibold uppercase tracking-[0.18em] text-lavender">
+                Care
+              </span>
             </span>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-          <p className="text-gray-500 text-[16px]">Sign in to continue to your dashboard</p>
+          <h1 className="mb-2 text-3xl">Welcome Back</h1>
+          <p className="text-[16px] text-muted-foreground">Sign in to continue to your dashboard</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[15px]">
+          <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-[15px] font-semibold text-gray-700 mb-2">Email</label>
+            <label className="mb-2 block text-[15px] font-semibold text-ink">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3.5 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2 focus:border-transparent"
-              style={{ focusRingColor: TEAL } as any}
+              className={inputClass}
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label className="block text-[15px] font-semibold text-gray-700 mb-2">Password</label>
+            <label className="mb-2 block text-[15px] font-semibold text-ink">Password</label>
             <div className="relative">
               <input
                 type={showPw ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3.5 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2 focus:border-transparent pr-12"
+                className={`${inputClass} pr-12`}
                 placeholder="••••••••"
               />
               <button
                 type="button"
                 onClick={() => setShowPw(!showPw)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                aria-label={showPw ? 'Hide password' : 'Show password'}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground transition-colors hover:text-ink"
               >
-                {showPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPw ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
           </div>
@@ -100,24 +106,23 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-xl text-white text-[17px] font-semibold transition hover:opacity-90 disabled:opacity-50"
-            style={{ backgroundColor: TEAL }}
+            className="w-full rounded-full bg-teal py-3.5 text-[17px] font-semibold text-white shadow-soft transition-all hover:bg-teal-deep hover:shadow-lift disabled:opacity-50"
           >
             {loading ? 'Signing in…' : 'Sign In'}
           </button>
         </form>
 
-        <p className="text-center mt-8 text-[15px] text-gray-500">
+        <p className="mt-8 text-center text-[15px] text-muted-foreground">
           Don&apos;t have an account?{' '}
-          <Link href="/register" className="font-semibold hover:underline" style={{ color: TEAL }}>
+          <Link href="/register" className="font-semibold text-teal hover:underline">
             Create one
           </Link>
         </p>
 
         {/* Demo accounts hint */}
-        <div className="mt-6 p-4 rounded-xl bg-gray-50 border border-gray-100">
-          <p className="text-[13px] text-gray-400 font-medium mb-2">Demo Accounts (Password123!)</p>
-          <div className="space-y-1 text-[13px] text-gray-400">
+        <div className="mt-6 rounded-2xl border border-border bg-muted/50 p-4">
+          <p className="mb-2 text-[13px] font-medium text-muted-foreground">Demo Accounts (Password123!)</p>
+          <div className="space-y-1 text-[13px] text-muted-foreground">
             <p>patient@example.com · admin@example.com · caregiver@example.com</p>
           </div>
         </div>

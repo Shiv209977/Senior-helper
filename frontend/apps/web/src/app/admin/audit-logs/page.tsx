@@ -7,7 +7,7 @@ import { FileText } from 'lucide-react';
 import { listAuditLogs } from '@/lib/api/admin';
 import type { AuditLog } from '@/lib/api/types';
 
-const TEAL = '#1B7A6E';
+const thClass = 'px-6 py-4 text-[14px] font-semibold text-muted-foreground';
 
 function AuditLogsContent() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
@@ -38,15 +38,18 @@ function AuditLogsContent() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-          <FileText className="w-8 h-8" style={{ color: TEAL }} /> Audit Logs
+      <div className="animate-rise mb-8">
+        <h1 className="flex items-center gap-3 text-4xl">
+          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-teal-soft">
+            <FileText className="h-6 w-6 text-teal" />
+          </span>
+          Audit Logs
         </h1>
-        <p className="text-gray-500 text-lg mt-1">{totalCount} log entries</p>
+        <p className="mt-2 text-xl text-muted-foreground">{totalCount} log entries</p>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[15px]">
+        <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
           {error}
         </div>
       )}
@@ -54,30 +57,28 @@ function AuditLogsContent() {
       {loading ? (
         <div className="flex justify-center py-20">
           <div
-            className="w-10 h-10 border-4 border-t-transparent rounded-full"
-            style={{
-              borderColor: TEAL,
-              borderTopColor: 'transparent',
-              animation: 'spin 1s linear infinite',
-            }}
+            className="h-11 w-11 rounded-full border-4 border-teal-soft border-t-teal"
+            style={{ animation: 'spin 0.9s linear infinite' }}
           />
         </div>
       ) : logs.length === 0 ? (
-        <div className="text-center py-16">
-          <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <p className="text-xl text-gray-400">No audit logs</p>
+        <div className="rounded-2xl border border-border bg-card py-16 text-center shadow-soft">
+          <span className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-teal-soft">
+            <FileText className="h-8 w-8 text-teal" />
+          </span>
+          <p className="text-xl text-ink">No audit logs</p>
         </div>
       ) : (
         <>
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+          <div className="animate-rise overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50">
-                    <th className="px-6 py-4 text-[14px] font-semibold text-gray-500">User</th>
-                    <th className="px-6 py-4 text-[14px] font-semibold text-gray-500">Action</th>
-                    <th className="px-6 py-4 text-[14px] font-semibold text-gray-500">Metadata</th>
-                    <th className="px-6 py-4 text-[14px] font-semibold text-gray-500">Date</th>
+                  <tr className="border-b border-border bg-muted/60">
+                    <th className={thClass}>User</th>
+                    <th className={thClass}>Action</th>
+                    <th className={thClass}>Metadata</th>
+                    <th className={thClass}>Date</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -87,16 +88,16 @@ function AuditLogsContent() {
                     return (
                       <tr
                         key={log.id}
-                        className="border-b border-gray-50 hover:bg-gray-50 transition"
+                        className="border-b border-border/60 transition-colors hover:bg-muted/40"
                       >
-                        <td className="px-6 py-4 text-[15px] text-gray-800">{log.user_email}</td>
-                        <td className="px-6 py-4 text-[15px] font-medium text-gray-700">
+                        <td className="px-6 py-4 text-[15px] text-ink">{log.user_email}</td>
+                        <td className="px-6 py-4 text-[15px] font-medium text-ink">
                           {log.action}
                         </td>
-                        <td className="px-6 py-4 text-[13px] text-gray-400 font-mono max-w-[200px] truncate">
+                        <td className="max-w-[200px] truncate px-6 py-4 font-mono text-[13px] text-muted-foreground">
                           {metaStr}
                         </td>
-                        <td className="px-6 py-4 text-[14px] text-gray-400">{dateLabel}</td>
+                        <td className="px-6 py-4 text-[14px] text-muted-foreground">{dateLabel}</td>
                       </tr>
                     );
                   })}
@@ -111,11 +112,9 @@ function AuditLogsContent() {
                 <button
                   key={p}
                   onClick={() => setPage(p)}
-                  className="w-10 h-10 rounded-lg font-semibold text-[15px] transition"
-                  style={{
-                    backgroundColor: page === p ? TEAL : '#F3F4F6',
-                    color: page === p ? 'white' : '#6B7280',
-                  }}
+                  className={`h-10 w-10 rounded-xl text-[15px] font-semibold transition-colors ${
+                    page === p ? 'bg-teal text-white' : 'bg-muted text-muted-foreground hover:bg-teal-soft hover:text-teal-deep'
+                  }`}
                 >
                   {p}
                 </button>
