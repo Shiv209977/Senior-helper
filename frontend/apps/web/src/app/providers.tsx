@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { Toaster } from 'sonner';
 import { useState } from 'react';
+import { PrefsProvider } from '@/lib/prefs';
 
 // Create a client that persists across re-renders
 function makeQueryClient() {
@@ -37,8 +38,22 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
-      <Toaster position="bottom-right" />
+      <PrefsProvider>
+        {children}
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            classNames: {
+              toast:
+                'rounded-2xl border border-border bg-card text-ink shadow-lift font-sans text-[15px]',
+              title: 'text-ink font-semibold',
+              description: 'text-muted-foreground',
+              success: 'border-teal/30',
+              error: 'border-coral/30',
+            },
+          }}
+        />
+      </PrefsProvider>
     </QueryClientProvider>
   );
 }

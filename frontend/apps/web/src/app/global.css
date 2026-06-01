@@ -162,14 +162,14 @@
 
     body {
         @apply bg-background text-foreground;
-        font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+        font-family: var(--font-body), var(--font-deva), ui-sans-serif, system-ui, sans-serif;
         -webkit-font-smoothing: antialiased;
         text-rendering: optimizeLegibility;
     }
 
     /* Editorial serif headlines carry the brand voice */
     h1, h2, h3, h4 {
-        font-family: var(--font-display), Georgia, "Times New Roman", serif;
+        font-family: var(--font-display), var(--font-deva), Georgia, "Times New Roman", serif;
         color: var(--ink);
         font-weight: 500;
         letter-spacing: -0.018em;
@@ -178,6 +178,12 @@
 
     ::selection {
         background: hsl(171 64% 29% / 0.16);
+    }
+
+    /* Always show a clear focus ring for keyboard users (accessibility). */
+    :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
     }
 }
 

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
-import { Fraunces, Mulish } from 'next/font/google';
+import { Fraunces, Mulish, Noto_Sans_Devanagari } from 'next/font/google';
 import './global.css';
 import { Providers } from './providers';
 
@@ -20,6 +20,14 @@ const mulish = Mulish({
   display: 'swap',
 });
 
+/* Devanagari fallback so Hindi renders crisply (no missing-glyph "tofu"). */
+const notoDeva = Noto_Sans_Devanagari({
+  subsets: ['devanagari'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-deva',
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
   title: 'Lifeway Cancer Support',
   description: 'Compassionate cancer care support for patients, caregivers, and care teams.',
@@ -30,7 +38,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${mulish.variable}`}>
+    <html lang="en" className={`${fraunces.variable} ${mulish.variable} ${notoDeva.variable}`}>
       <body>
         <Providers>{children}</Providers>
       </body>
