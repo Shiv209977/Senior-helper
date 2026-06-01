@@ -7,7 +7,12 @@ import { AlertTriangle, Phone, X } from 'lucide-react';
 import { listEmergencies, createEmergency } from '@/lib/api/emergencies';
 import type { EmergencyRequest } from '@/lib/api/types';
 
-const TEAL = '#1B7A6E';
+const STATUS_PILL: Record<string, string> = {
+  active: 'bg-coral text-white',
+  acknowledged: 'bg-gold/20 text-ink',
+  resolved: 'bg-teal-soft text-teal-deep',
+  cancelled: 'bg-muted text-muted-foreground',
+};
 
 function EmergenciesContent() {
   const [emergencies, setEmergencies] = useState<EmergencyRequest[]>([]);
@@ -53,38 +58,41 @@ function EmergenciesContent() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <AlertTriangle className="w-8 h-8 text-red-500" /> Emergency
-          </h1>
-          <p className="text-gray-500 text-lg mt-1">Request urgent help from your care team</p>
-        </div>
+      <div className="animate-rise mb-8">
+        <h1 className="flex items-center gap-3 text-4xl">
+          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-coral-soft">
+            <AlertTriangle className="h-6 w-6 text-coral" />
+          </span>
+          Emergency
+        </h1>
+        <p className="mt-2 text-xl text-muted-foreground">Request urgent help from your care team</p>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[15px]">
+        <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
           {error}
         </div>
       )}
 
       {/* Big emergency button */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center mb-8">
-        <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-red-500" />
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Need Urgent Help?</h2>
-        <p className="text-gray-500 text-lg mb-6 max-w-md mx-auto">
+      <div className="animate-rise relative mb-8 overflow-hidden rounded-[1.5rem] border border-coral/20 bg-coral-soft p-8 text-center shadow-soft">
+        <span className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-white shadow-soft">
+          <AlertTriangle className="h-8 w-8 text-coral" />
+        </span>
+        <h2 className="mb-2 text-3xl">Need Urgent Help?</h2>
+        <p className="mx-auto mb-6 max-w-md text-lg text-muted-foreground">
           Press the button below to alert your caregivers and care team immediately.
         </p>
         <button
           onClick={() => setShowConfirm(true)}
           disabled={hasActive}
-          className="px-10 py-4 rounded-2xl text-white text-xl font-bold bg-red-500 hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-2xl bg-coral px-10 py-4 text-xl font-bold text-white shadow-soft transition-all hover:bg-destructive hover:shadow-lift disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <Phone className="w-6 h-6 inline mr-2" />
+          <Phone className="mr-2 inline h-6 w-6" />
           {hasActive ? 'Emergency Already Active' : '🚨 Trigger Emergency'}
         </button>
         {hasActive && (
-          <p className="text-sm text-gray-400 mt-3">
+          <p className="mt-3 text-sm text-muted-foreground">
             You already have an active emergency. Your team has been notified.
           </p>
         )}
@@ -92,17 +100,20 @@ function EmergenciesContent() {
 
       {/* Confirmation modal */}
       {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 relative text-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm">
+          <div className="shadow-lift relative w-full max-w-md rounded-[1.75rem] bg-card p-8 text-center">
             <button
               onClick={() => setShowConfirm(false)}
-              className="absolute top-4 right-4 p-1 text-gray-400"
+              aria-label="Close"
+              className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-ink"
             >
-              <X className="w-6 h-6" />
+              <X className="h-6 w-6" />
             </button>
-            <AlertTriangle className="w-14 h-14 mx-auto mb-4 text-red-500" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Confirm Emergency</h2>
-            <p className="text-gray-500 mb-4">
+            <span className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-coral-soft">
+              <AlertTriangle className="h-7 w-7 text-coral" />
+            </span>
+            <h2 className="mb-2 text-2xl">Confirm Emergency</h2>
+            <p className="mb-4 text-muted-foreground">
               Are you sure you want to trigger an emergency alert? Your caregivers will be notified
               immediately.
             </p>
@@ -110,20 +121,20 @@ function EmergenciesContent() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={2}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2 resize-none mb-4"
+              className="mb-4 w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40"
               placeholder="Optional: describe your situation"
             />
             <div className="flex gap-3">
               <button
                 onClick={() => setShowConfirm(false)}
-                className="flex-1 py-3 rounded-xl border-2 border-gray-200 font-semibold text-gray-600 hover:bg-gray-50"
+                className="flex-1 rounded-full border-2 border-border py-3 font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-ink"
               >
                 Cancel
               </button>
               <button
                 onClick={handleTrigger}
                 disabled={sending}
-                className="flex-1 py-3 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 disabled:opacity-50"
+                className="flex-1 rounded-full bg-coral py-3 font-semibold text-white transition-colors hover:bg-destructive disabled:opacity-50"
               >
                 {sending ? 'Sending…' : 'Yes, Alert Now'}
               </button>
@@ -133,45 +144,35 @@ function EmergenciesContent() {
       )}
 
       {/* History */}
-      <h2 className="text-xl font-bold text-gray-900 mb-4">Emergency History</h2>
+      <h2 className="mb-4 text-2xl">Emergency History</h2>
       {loading ? (
         <div className="flex justify-center py-16">
           <div
-            className="w-10 h-10 border-4 border-t-transparent rounded-full"
-            style={{
-              borderColor: TEAL,
-              borderTopColor: 'transparent',
-              animation: 'spin 1s linear infinite',
-            }}
+            className="h-11 w-11 rounded-full border-4 border-teal-soft border-t-teal"
+            style={{ animation: 'spin 0.9s linear infinite' }}
           />
         </div>
       ) : emergencies.length === 0 ? (
-        <p className="text-gray-400 text-[16px]">No emergency history</p>
+        <p className="text-[16px] text-muted-foreground">No emergency history</p>
       ) : (
         <div className="space-y-3">
-          {emergencies.map((e) => {
-            const statusColors: Record<string, { bg: string; text: string }> = {
-              active: { bg: '#FEE2E2', text: '#DC2626' },
-              acknowledged: { bg: '#FEF9C3', text: '#854D0E' },
-              resolved: { bg: '#DCFCE7', text: '#166534' },
-              cancelled: { bg: '#F3F4F6', text: '#6B7280' },
-            };
-            const sc = statusColors[e.status] ?? statusColors.cancelled;
+          {emergencies.map((e, i) => {
             const dateLabel = e.created_at.split('T')[0] ?? '';
+            const isActive = e.status === 'active';
             return (
               <div
                 key={e.id}
-                className="bg-white rounded-2xl border border-gray-100 p-5 flex items-center gap-4"
+                className="animate-rise flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft"
+                style={{ animationDelay: `${Math.min(i, 8) * 0.04}s` }}
               >
-                <AlertTriangle className="w-6 h-6" style={{ color: sc.text }} />
+                <AlertTriangle className={`h-6 w-6 shrink-0 ${isActive ? 'text-coral' : 'text-muted-foreground'}`} />
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-800 text-[16px]">{e.emergency_type}</p>
-                  {e.message && <p className="text-sm text-gray-400">{e.message}</p>}
+                  <p className="text-[16px] font-semibold capitalize text-ink">{e.emergency_type}</p>
+                  {e.message && <p className="text-sm text-muted-foreground">{e.message}</p>}
                 </div>
-                <span className="text-sm text-gray-400">{dateLabel}</span>
+                <span className="text-sm text-muted-foreground">{dateLabel}</span>
                 <span
-                  className="px-3 py-1 rounded-full text-[12px] font-bold capitalize"
-                  style={{ backgroundColor: sc.bg, color: sc.text }}
+                  className={`rounded-full px-3 py-1 text-[12px] font-bold capitalize ${STATUS_PILL[e.status] ?? STATUS_PILL.cancelled}`}
                 >
                   {e.status}
                 </span>

@@ -7,7 +7,11 @@ import { Users, Plus, Copy, CheckCircle, XCircle } from 'lucide-react';
 import { listCaregiverLinks, createInvite, revokeLink } from '@/lib/api/caregiver-links';
 import type { CaregiverLink } from '@/lib/api/types';
 
-const TEAL = '#1B7A6E';
+const STATUS_PILL: Record<string, string> = {
+  pending: 'bg-gold/20 text-ink',
+  active: 'bg-teal-soft text-teal-deep',
+  revoked: 'bg-muted text-muted-foreground',
+};
 
 function CaregiversContent() {
   const [links, setLinks] = useState<CaregiverLink[]>([]);
@@ -62,33 +66,29 @@ function CaregiversContent() {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  const statusColors: Record<string, { bg: string; text: string }> = {
-    pending: { bg: '#FEF9C3', text: '#854D0E' },
-    active: { bg: '#DCFCE7', text: '#166534' },
-    revoked: { bg: '#F3F4F6', text: '#6B7280' },
-  };
-
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
+      <div className="animate-rise mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Users className="w-8 h-8" style={{ color: TEAL }} /> Caregivers
+          <h1 className="flex items-center gap-3 text-4xl">
+            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-teal-soft">
+              <Users className="h-6 w-6 text-teal" />
+            </span>
+            Caregivers
           </h1>
-          <p className="text-gray-500 text-lg mt-1">Manage your caregiver connections</p>
+          <p className="mt-2 text-xl text-muted-foreground">Manage your caregiver connections</p>
         </div>
         <button
           onClick={handleCreate}
           disabled={creating}
-          className="flex items-center gap-2 px-5 py-3 rounded-xl text-white font-semibold text-[16px] hover:opacity-90 disabled:opacity-50 transition"
-          style={{ backgroundColor: TEAL }}
+          className="flex items-center gap-2 rounded-full bg-teal px-6 py-3 text-[16px] font-semibold text-white shadow-soft transition-all hover:bg-teal-deep hover:shadow-lift disabled:opacity-50"
         >
-          <Plus className="w-5 h-5" /> {creating ? 'Creating…' : 'Generate Invite Code'}
+          <Plus className="h-5 w-5" /> {creating ? 'Creating…' : 'Generate Invite Code'}
         </button>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[15px]">
+        <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
           {error}
         </div>
       )}
@@ -96,76 +96,72 @@ function CaregiversContent() {
       {loading ? (
         <div className="flex justify-center py-20">
           <div
-            className="w-10 h-10 border-4 border-t-transparent rounded-full"
-            style={{
-              borderColor: TEAL,
-              borderTopColor: 'transparent',
-              animation: 'spin 1s linear infinite',
-            }}
+            className="h-11 w-11 rounded-full border-4 border-teal-soft border-t-teal"
+            style={{ animation: 'spin 0.9s linear infinite' }}
           />
         </div>
       ) : links.length === 0 ? (
-        <div className="text-center py-20">
-          <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <p className="text-xl text-gray-400">No caregiver links yet</p>
-          <p className="text-gray-400 mt-1">
+        <div className="rounded-2xl border border-border bg-card py-20 text-center shadow-soft">
+          <span className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-teal-soft">
+            <Users className="h-8 w-8 text-teal" />
+          </span>
+          <p className="text-xl text-ink">No caregiver links yet</p>
+          <p className="mt-1 text-muted-foreground">
             Generate an invite code and share it with your caregiver
           </p>
         </div>
       ) : (
         <div className="space-y-3">
-          {links.map((link) => {
-            const sc = statusColors[link.status] ?? statusColors.pending;
-            return (
-              <div key={link.id} className="bg-white rounded-2xl border border-gray-100 p-5">
-                <div className="flex items-center gap-4">
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: '#E8F5F2' }}
-                  >
-                    <Users className="w-6 h-6" style={{ color: TEAL }} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-bold text-gray-800 text-[17px]">
-                      {link.status === 'active'
-                        ? link.caregiver_name || 'Caregiver'
-                        : 'Pending Invite'}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <code className="text-sm bg-gray-100 px-2 py-0.5 rounded font-mono">
-                        {link.invite_code}
-                      </code>
-                      <button
-                        onClick={() => handleCopy(link.id, link.invite_code)}
-                        className="p-1 text-gray-400 hover:text-gray-600"
-                      >
-                        {copied === link.id ? (
-                          <CheckCircle className="w-4 h-4 text-green-500" />
-                        ) : (
-                          <Copy className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                  <span
-                    className="px-3 py-1 rounded-full text-[12px] font-bold capitalize"
-                    style={{ backgroundColor: sc.bg, color: sc.text }}
-                  >
-                    {link.status}
-                  </span>
-                  {link.status !== 'revoked' && (
+          {links.map((link, i) => (
+            <div
+              key={link.id}
+              className="animate-rise rounded-2xl border border-border bg-card p-5 shadow-soft"
+              style={{ animationDelay: `${Math.min(i, 8) * 0.04}s` }}
+            >
+              <div className="flex items-center gap-4">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-teal-soft">
+                  <Users className="h-6 w-6 text-teal" />
+                </span>
+                <div className="flex-1">
+                  <p className="text-[17px] font-bold text-ink">
+                    {link.status === 'active'
+                      ? link.caregiver_name || 'Caregiver'
+                      : 'Pending Invite'}
+                  </p>
+                  <div className="mt-1 flex items-center gap-2">
+                    <code className="rounded-md bg-muted px-2 py-0.5 font-mono text-sm text-ink">
+                      {link.invite_code}
+                    </code>
                     <button
-                      onClick={() => handleRevoke(link.id)}
-                      className="p-2 text-gray-400 hover:text-red-500 transition"
-                      title="Revoke"
+                      onClick={() => handleCopy(link.id, link.invite_code)}
+                      aria-label="Copy invite code"
+                      className="p-1 text-muted-foreground transition-colors hover:text-teal"
                     >
-                      <XCircle className="w-5 h-5" />
+                      {copied === link.id ? (
+                        <CheckCircle className="h-4 w-4 text-teal" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
                     </button>
-                  )}
+                  </div>
                 </div>
+                <span
+                  className={`rounded-full px-3 py-1 text-[12px] font-bold capitalize ${STATUS_PILL[link.status] ?? STATUS_PILL.pending}`}
+                >
+                  {link.status}
+                </span>
+                {link.status !== 'revoked' && (
+                  <button
+                    onClick={() => handleRevoke(link.id)}
+                    className="p-2 text-muted-foreground transition-colors hover:text-coral"
+                    title="Revoke"
+                  >
+                    <XCircle className="h-5 w-5" />
+                  </button>
+                )}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       )}
 

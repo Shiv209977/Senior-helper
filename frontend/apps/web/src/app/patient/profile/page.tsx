@@ -8,7 +8,9 @@ import { listPatientProfiles, updatePatientProfile } from '@/lib/api/profiles';
 import { useAuthStore } from '@/lib/store/auth';
 import type { PatientProfile } from '@/lib/api/types';
 
-const TEAL = '#1B7A6E';
+const inputClass =
+  'w-full rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40';
+const labelClass = 'mb-1 block text-[14px] font-semibold text-ink';
 
 function ProfileContent() {
   const { user } = useAuthStore();
@@ -92,12 +94,8 @@ function ProfileContent() {
     return (
       <div className="flex justify-center py-20">
         <div
-          className="w-10 h-10 border-4 border-t-transparent rounded-full"
-          style={{
-            borderColor: TEAL,
-            borderTopColor: 'transparent',
-            animation: 'spin 1s linear infinite',
-          }}
+          className="h-11 w-11 rounded-full border-4 border-teal-soft border-t-teal"
+          style={{ animation: 'spin 0.9s linear infinite' }}
         />
         <style jsx global>{`
           @keyframes spin {
@@ -112,167 +110,169 @@ function ProfileContent() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-          <User className="w-8 h-8" style={{ color: TEAL }} /> My Profile
+      <div className="animate-rise mb-8">
+        <h1 className="flex items-center gap-3 text-4xl">
+          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-teal-soft">
+            <User className="h-6 w-6 text-teal" />
+          </span>
+          My Profile
         </h1>
-        <p className="text-gray-500 text-lg mt-1">Manage your personal and medical information</p>
+        <p className="mt-2 text-xl text-muted-foreground">Manage your personal and medical information</p>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[15px]">
+        <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
           {error}
         </div>
       )}
       {success && (
-        <div className="mb-6 p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 text-[15px]">
+        <div className="mb-6 rounded-2xl border border-teal/20 bg-teal-soft px-5 py-4 text-[15px] font-medium text-teal-deep">
           {success}
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-8">
+      <div className="animate-rise rounded-[1.5rem] border border-border bg-card p-6 shadow-soft md:p-8" style={{ animationDelay: '0.06s' }}>
         {/* Read-only */}
-        <div className="mb-8 pb-6 border-b border-gray-100">
-          <h2 className="font-bold text-gray-900 text-lg mb-4">Account</h2>
-          <div className="grid md:grid-cols-2 gap-4">
+        <div className="mb-8 border-b border-border pb-6">
+          <h2 className="mb-4 font-serif text-xl text-ink">Account</h2>
+          <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="block text-[13px] font-medium text-gray-400 mb-1">Full Name</label>
-              <p className="text-[16px] text-gray-800 font-semibold">
+              <label className="mb-1 block text-[13px] font-medium text-muted-foreground">Full Name</label>
+              <p className="text-[16px] font-semibold text-ink">
                 {profile?.full_name ?? user?.full_name}
               </p>
             </div>
             <div>
-              <label className="block text-[13px] font-medium text-gray-400 mb-1">Email</label>
-              <p className="text-[16px] text-gray-800">{profile?.email ?? user?.email}</p>
+              <label className="mb-1 block text-[13px] font-medium text-muted-foreground">Email</label>
+              <p className="text-[16px] text-ink">{profile?.email ?? user?.email}</p>
             </div>
           </div>
         </div>
 
         {/* Editable */}
         <div className="space-y-6">
-          <h2 className="font-bold text-gray-900 text-lg">Personal Information</h2>
+          <h2 className="font-serif text-xl text-ink">Personal Information</h2>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[14px] font-semibold text-gray-700 mb-1">Age</label>
+              <label className={labelClass}>Age</label>
               <input
                 type="number"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                className={inputClass}
               />
             </div>
             <div>
-              <label className="block text-[14px] font-semibold text-gray-700 mb-1">Gender</label>
+              <label className={labelClass}>Gender</label>
               <input
                 type="text"
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                className={inputClass}
               />
             </div>
           </div>
           <div>
-            <label className="block text-[14px] font-semibold text-gray-700 mb-1">Address</label>
+            <label className={labelClass}>Address</label>
             <input
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+              className={inputClass}
             />
           </div>
 
-          <h2 className="font-bold text-gray-900 text-lg pt-4">Emergency Contact</h2>
+          <h2 className="pt-4 font-serif text-xl text-ink">Emergency Contact</h2>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[14px] font-semibold text-gray-700 mb-1">
+              <label className={labelClass}>
                 Contact Name
               </label>
               <input
                 type="text"
                 value={ecName}
                 onChange={(e) => setEcName(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                className={inputClass}
               />
             </div>
             <div>
-              <label className="block text-[14px] font-semibold text-gray-700 mb-1">
+              <label className={labelClass}>
                 Contact Phone
               </label>
               <input
                 type="tel"
                 value={ecPhone}
                 onChange={(e) => setEcPhone(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                className={inputClass}
               />
             </div>
           </div>
 
-          <h2 className="font-bold text-gray-900 text-lg pt-4">Medical Information</h2>
+          <h2 className="pt-4 font-serif text-xl text-ink">Medical Information</h2>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[14px] font-semibold text-gray-700 mb-1">
+              <label className={labelClass}>
                 Cancer Type
               </label>
               <input
                 type="text"
                 value={cancerType}
                 onChange={(e) => setCancerType(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                className={inputClass}
               />
             </div>
             <div>
-              <label className="block text-[14px] font-semibold text-gray-700 mb-1">
+              <label className={labelClass}>
                 Treatment Stage
               </label>
               <input
                 type="text"
                 value={treatmentStage}
                 onChange={(e) => setTreatmentStage(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                className={inputClass}
               />
             </div>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[14px] font-semibold text-gray-700 mb-1">
+              <label className={labelClass}>
                 Primary Hospital
               </label>
               <input
                 type="text"
                 value={hospital}
                 onChange={(e) => setHospital(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                className={inputClass}
               />
             </div>
             <div>
-              <label className="block text-[14px] font-semibold text-gray-700 mb-1">
+              <label className={labelClass}>
                 Doctor Name
               </label>
               <input
                 type="text"
                 value={doctor}
                 onChange={(e) => setDoctor(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                className={inputClass}
               />
             </div>
           </div>
           <div>
-            <label className="block text-[14px] font-semibold text-gray-700 mb-1">Notes</label>
+            <label className={labelClass}>Notes</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2 resize-none"
+              className={`${inputClass} resize-none`}
             />
           </div>
 
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-[16px] hover:opacity-90 disabled:opacity-50 transition"
-            style={{ backgroundColor: TEAL }}
+            className="flex items-center gap-2 rounded-full bg-teal px-6 py-3 text-[16px] font-semibold text-white shadow-soft transition-all hover:bg-teal-deep hover:shadow-lift disabled:opacity-50"
           >
-            <Save className="w-5 h-5" /> {saving ? 'Saving…' : 'Save Changes'}
+            <Save className="h-5 w-5" /> {saving ? 'Saving…' : 'Save Changes'}
           </button>
         </div>
       </div>

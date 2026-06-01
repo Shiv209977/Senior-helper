@@ -7,7 +7,9 @@ import { Pill, Plus, X, Clock } from 'lucide-react';
 import { listMedications, createMedication } from '@/lib/api/medications';
 import type { Medication } from '@/lib/api/types';
 
-const TEAL = '#1B7A6E';
+const inputClass =
+  'w-full rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40';
+const labelClass = 'mb-1 block text-[14px] font-semibold text-ink';
 
 function MedicationsContent() {
   const [meds, setMeds] = useState<Medication[]>([]);
@@ -84,101 +86,94 @@ function MedicationsContent() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
+      <div className="animate-rise mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Pill className="w-8 h-8" style={{ color: '#D4686A' }} /> Medications
+          <h1 className="flex items-center gap-3 text-4xl">
+            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-coral-soft">
+              <Pill className="h-6 w-6 text-coral" />
+            </span>
+            Medications
           </h1>
-          <p className="text-gray-500 text-lg mt-1">Manage your medication schedule</p>
+          <p className="mt-2 text-xl text-muted-foreground">Manage your medication schedule</p>
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-5 py-3 rounded-xl text-white font-semibold text-[16px] hover:opacity-90 transition"
-          style={{ backgroundColor: TEAL }}
+          className="flex items-center gap-2 rounded-full bg-teal px-6 py-3 text-[16px] font-semibold text-white shadow-soft transition-all hover:bg-teal-deep hover:shadow-lift"
         >
-          <Plus className="w-5 h-5" /> Add Medication
+          <Plus className="h-5 w-5" /> Add Medication
         </button>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[15px]">
+        <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
           {error}
         </div>
       )}
 
       {/* Add form modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-8 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm">
+          <div className="shadow-lift relative w-full max-w-lg rounded-[1.75rem] bg-card p-8">
             <button
               onClick={() => setShowForm(false)}
-              className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600"
+              aria-label="Close"
+              className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-ink"
             >
-              <X className="w-6 h-6" />
+              <X className="h-6 w-6" />
             </button>
-            <h2 className="text-xl font-bold text-gray-900 mb-6">New Medication</h2>
+            <h2 className="mb-6 text-3xl">New Medication</h2>
             {formError && (
-              <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-700 text-[14px]">
+              <div className="mb-4 rounded-xl bg-coral-soft px-4 py-3 text-[14px] font-medium text-coral">
                 {formError}
               </div>
             )}
             <div className="space-y-4">
               <div>
-                <label className="block text-[14px] font-semibold text-gray-700 mb-1">
-                  Medicine Name *
-                </label>
+                <label className={labelClass}>Medicine Name *</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                  className={inputClass}
                   placeholder="e.g. Metformin"
                 />
               </div>
               <div>
-                <label className="block text-[14px] font-semibold text-gray-700 mb-1">
-                  Dosage *
-                </label>
+                <label className={labelClass}>Dosage *</label>
                 <input
                   type="text"
                   value={dosage}
                   onChange={(e) => setDosage(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                  className={inputClass}
                   placeholder="e.g. 500mg"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[14px] font-semibold text-gray-700 mb-1">
-                    Start Date *
-                  </label>
+                  <label className={labelClass}>Start Date *</label>
                   <input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                    className={inputClass}
                   />
                 </div>
                 <div>
-                  <label className="block text-[14px] font-semibold text-gray-700 mb-1">
-                    End Date
-                  </label>
+                  <label className={labelClass}>End Date</label>
                   <input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                    className={inputClass}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-[14px] font-semibold text-gray-700 mb-1">
-                  Frequency
-                </label>
+                <label className={labelClass}>Frequency</label>
                 <select
                   value={freqType}
                   onChange={(e) => setFreqType(e.target.value as any)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                  className={inputClass}
                 >
                   <option value="once_daily">Once Daily</option>
                   <option value="twice_daily">Twice Daily</option>
@@ -186,34 +181,29 @@ function MedicationsContent() {
                 </select>
               </div>
               <div>
-                <label className="block text-[14px] font-semibold text-gray-700 mb-1">
-                  Scheduled Times (comma-separated)
-                </label>
+                <label className={labelClass}>Scheduled Times (comma-separated)</label>
                 <input
                   type="text"
                   value={times}
                   onChange={(e) => setTimes(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                  className={inputClass}
                   placeholder="09:00, 21:00"
                 />
               </div>
               <div>
-                <label className="block text-[14px] font-semibold text-gray-700 mb-1">
-                  Instructions
-                </label>
+                <label className={labelClass}>Instructions</label>
                 <textarea
                   value={instructions}
                   onChange={(e) => setInstructions(e.target.value)}
                   rows={2}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2 resize-none"
+                  className={`${inputClass} resize-none`}
                   placeholder="Take with food"
                 />
               </div>
               <button
                 onClick={handleCreate}
                 disabled={formLoading || !name || !dosage}
-                className="w-full py-3 rounded-xl text-white font-semibold text-[16px] hover:opacity-90 disabled:opacity-50 transition"
-                style={{ backgroundColor: TEAL }}
+                className="w-full rounded-full bg-teal py-3 text-[16px] font-semibold text-white transition-all hover:bg-teal-deep disabled:opacity-50"
               >
                 {formLoading ? 'Saving…' : 'Save Medication'}
               </button>
@@ -225,43 +215,39 @@ function MedicationsContent() {
       {loading ? (
         <div className="flex justify-center py-20">
           <div
-            className="w-10 h-10 border-4 border-t-transparent rounded-full"
-            style={{
-              borderColor: TEAL,
-              borderTopColor: 'transparent',
-              animation: 'spin 1s linear infinite',
-            }}
+            className="h-11 w-11 rounded-full border-4 border-teal-soft border-t-teal"
+            style={{ animation: 'spin 0.9s linear infinite' }}
           />
         </div>
       ) : meds.length === 0 ? (
-        <div className="text-center py-20">
-          <Pill className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <p className="text-xl text-gray-400">No medications yet</p>
-          <p className="text-gray-400 mt-1">Click &ldquo;Add Medication&rdquo; to get started</p>
+        <div className="rounded-2xl border border-border bg-card py-20 text-center shadow-soft">
+          <span className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-coral-soft">
+            <Pill className="h-8 w-8 text-coral" />
+          </span>
+          <p className="text-xl text-ink">No medications yet</p>
+          <p className="mt-1 text-muted-foreground">Click &ldquo;Add Medication&rdquo; to get started</p>
         </div>
       ) : (
         <>
           <div className="space-y-3">
-            {meds.map((m) => (
+            {meds.map((m, i) => (
               <div
                 key={m.id}
-                className="bg-white rounded-2xl border border-gray-100 p-5 flex items-center gap-4"
+                className="animate-rise flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft"
+                style={{ animationDelay: `${Math.min(i, 8) * 0.04}s` }}
               >
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center"
-                  style={{ backgroundColor: '#FEF2F2' }}
-                >
-                  <Pill className="w-6 h-6" style={{ color: '#D4686A' }} />
-                </div>
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-coral-soft">
+                  <Pill className="h-6 w-6 text-coral" />
+                </span>
                 <div className="flex-1">
-                  <p className="font-bold text-gray-800 text-[17px]">{m.medicine_name}</p>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-[17px] font-bold text-ink">{m.medicine_name}</p>
+                  <p className="text-sm text-muted-foreground">
                     {m.dosage} · {m.frequency_type.replace('_', ' ')}
                   </p>
                 </div>
-                <div className="text-right text-sm text-gray-400">
-                  <p className="flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" /> {m.scheduled_times.join(', ')}
+                <div className="text-right text-sm text-muted-foreground">
+                  <p className="flex items-center justify-end gap-1">
+                    <Clock className="h-3.5 w-3.5" /> {m.scheduled_times.join(', ')}
                   </p>
                   <p>
                     {m.start_date}
@@ -269,7 +255,7 @@ function MedicationsContent() {
                   </p>
                 </div>
                 <span
-                  className={`px-3 py-1 rounded-full text-[12px] font-bold ${m.is_active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}
+                  className={`rounded-full px-3 py-1 text-[12px] font-bold ${m.is_active ? 'bg-teal-soft text-teal-deep' : 'bg-muted text-muted-foreground'}`}
                 >
                   {m.is_active ? 'Active' : 'Inactive'}
                 </span>
@@ -277,16 +263,14 @@ function MedicationsContent() {
             ))}
           </div>
           {totalPages > 1 && (
-            <div className="flex justify-center gap-2 mt-8">
+            <div className="mt-8 flex justify-center gap-2">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                 <button
                   key={p}
                   onClick={() => setPage(p)}
-                  className="w-10 h-10 rounded-lg font-semibold text-[15px] transition"
-                  style={{
-                    backgroundColor: page === p ? TEAL : '#F3F4F6',
-                    color: page === p ? 'white' : '#6B7280',
-                  }}
+                  className={`h-10 w-10 rounded-xl text-[15px] font-semibold transition-colors ${
+                    page === p ? 'bg-teal text-white' : 'bg-muted text-muted-foreground hover:bg-teal-soft hover:text-teal-deep'
+                  }`}
                 >
                   {p}
                 </button>

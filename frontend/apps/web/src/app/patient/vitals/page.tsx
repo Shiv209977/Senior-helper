@@ -8,8 +8,9 @@ import { listVitals, createVital } from '@/lib/api/vitals';
 import { listSymptoms, createSymptom } from '@/lib/api/symptoms';
 import type { VitalSign, SymptomRecord } from '@/lib/api/types';
 
-const TEAL = '#1B7A6E';
-const CORAL = '#D4686A';
+const inputClass =
+  'w-full rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40';
+const labelClass = 'mb-1 block text-[14px] font-semibold text-ink';
 
 const SYMPTOM_FLAGS = [
   { key: 'fever', label: 'Fever' },
@@ -141,48 +142,47 @@ function VitalsContent() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
+      <div className="animate-rise mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Activity className="w-8 h-8" style={{ color: TEAL }} /> Vitals & Symptoms
+          <h1 className="flex items-center gap-3 text-4xl">
+            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-teal-soft">
+              <Activity className="h-6 w-6 text-teal" />
+            </span>
+            Vitals &amp; Symptoms
           </h1>
-          <p className="text-gray-500 text-lg mt-1">Track your health data</p>
+          <p className="mt-2 text-xl text-muted-foreground">Track your health data</p>
         </div>
         <div className="flex gap-3">
           <button
             onClick={() => setShowVitalForm(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white font-semibold text-[15px] hover:opacity-90 transition"
-            style={{ backgroundColor: TEAL }}
+            className="flex items-center gap-2 rounded-full bg-teal px-5 py-2.5 text-[15px] font-semibold text-white shadow-soft transition-all hover:bg-teal-deep hover:shadow-lift"
           >
-            <Plus className="w-4 h-4" /> Log Vitals
+            <Plus className="h-4 w-4" /> Log Vitals
           </button>
           <button
             onClick={() => setShowSymptomForm(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white font-semibold text-[15px] hover:opacity-90 transition"
-            style={{ backgroundColor: CORAL }}
+            className="flex items-center gap-2 rounded-full bg-coral px-5 py-2.5 text-[15px] font-semibold text-white shadow-soft transition-all hover:bg-destructive hover:shadow-lift"
           >
-            <Plus className="w-4 h-4" /> Log Symptoms
+            <Plus className="h-4 w-4" /> Log Symptoms
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[15px]">
+        <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
           {error}
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6">
+      <div className="mb-6 flex gap-2">
         {(['vitals', 'symptoms'] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className="px-5 py-2.5 rounded-xl font-semibold text-[15px] capitalize transition"
-            style={{
-              backgroundColor: tab === t ? '#E8F5F2' : '#F3F4F6',
-              color: tab === t ? TEAL : '#6B7280',
-            }}
+            className={`rounded-full px-5 py-2.5 text-[15px] font-semibold capitalize transition-colors ${
+              tab === t ? 'bg-teal-soft text-teal-deep' : 'bg-muted text-muted-foreground hover:text-ink'
+            }`}
           >
             {t}
           </button>
@@ -192,85 +192,85 @@ function VitalsContent() {
       {loading ? (
         <div className="flex justify-center py-20">
           <div
-            className="w-10 h-10 border-4 border-t-transparent rounded-full"
-            style={{
-              borderColor: TEAL,
-              borderTopColor: 'transparent',
-              animation: 'spin 1s linear infinite',
-            }}
+            className="h-11 w-11 rounded-full border-4 border-teal-soft border-t-teal"
+            style={{ animation: 'spin 0.9s linear infinite' }}
           />
         </div>
       ) : tab === 'vitals' ? (
         vitals.length === 0 ? (
-          <div className="text-center py-16">
-            <Activity className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-xl text-gray-400">No vitals logged yet</p>
+          <div className="rounded-2xl border border-border bg-card py-16 text-center shadow-soft">
+            <span className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-teal-soft">
+              <Activity className="h-8 w-8 text-teal" />
+            </span>
+            <p className="text-xl text-ink">No vitals logged yet</p>
           </div>
         ) : (
           <div className="space-y-3">
             {vitals.map((v) => {
               const dateLabel = v.recorded_at.split('T')[0] ?? '';
               return (
-                <div key={v.id} className="bg-white rounded-2xl border border-gray-100 p-5">
+                <div key={v.id} className="animate-rise rounded-2xl border border-border bg-card p-5 shadow-soft">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="font-bold text-gray-800 text-[17px]">Vitals Record</p>
-                    <span className="text-sm text-gray-400">{dateLabel}</span>
+                    <p className="text-[17px] font-bold text-ink">Vitals Record</p>
+                    <span className="text-sm text-muted-foreground">{dateLabel}</span>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {v.temperature && (
-                      <div className="flex items-center gap-2 p-3 rounded-xl bg-orange-50">
-                        <ThermometerSun className="w-5 h-5 text-orange-500" />
+                      <div className="flex items-center gap-2 rounded-xl bg-gold/15 p-3">
+                        <ThermometerSun className="h-5 w-5 text-gold" />
                         <div>
-                          <p className="text-xs text-gray-400">Temp</p>
-                          <p className="font-semibold text-gray-800">{v.temperature}°C</p>
+                          <p className="text-xs text-muted-foreground">Temp</p>
+                          <p className="font-semibold text-ink">{v.temperature}°C</p>
                         </div>
                       </div>
                     )}
                     {v.heart_rate != null && (
-                      <div className="flex items-center gap-2 p-3 rounded-xl bg-red-50">
-                        <Heart className="w-5 h-5 text-red-500" />
+                      <div className="flex items-center gap-2 rounded-xl bg-coral-soft p-3">
+                        <Heart className="h-5 w-5 text-coral" />
                         <div>
-                          <p className="text-xs text-gray-400">Heart Rate</p>
-                          <p className="font-semibold text-gray-800">{v.heart_rate} bpm</p>
+                          <p className="text-xs text-muted-foreground">Heart Rate</p>
+                          <p className="font-semibold text-ink">{v.heart_rate} bpm</p>
                         </div>
                       </div>
                     )}
                     {v.oxygen_level != null && (
-                      <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-50">
-                        <Droplets className="w-5 h-5 text-blue-500" />
+                      <div className="flex items-center gap-2 rounded-xl bg-teal-soft p-3">
+                        <Droplets className="h-5 w-5 text-teal" />
                         <div>
-                          <p className="text-xs text-gray-400">SpO₂</p>
-                          <p className="font-semibold text-gray-800">{v.oxygen_level}%</p>
+                          <p className="text-xs text-muted-foreground">SpO₂</p>
+                          <p className="font-semibold text-ink">{v.oxygen_level}%</p>
                         </div>
                       </div>
                     )}
                     {(v.systolic_bp != null || v.diastolic_bp != null) && (
-                      <div className="flex items-center gap-2 p-3 rounded-xl bg-purple-50">
-                        <Activity className="w-5 h-5 text-purple-500" />
+                      <div className="flex items-center gap-2 rounded-xl bg-lavender-soft p-3">
+                        <Activity className="h-5 w-5 text-lavender" />
                         <div>
-                          <p className="text-xs text-gray-400">BP</p>
-                          <p className="font-semibold text-gray-800">
+                          <p className="text-xs text-muted-foreground">BP</p>
+                          <p className="font-semibold text-ink">
                             {v.systolic_bp}/{v.diastolic_bp}
                           </p>
                         </div>
                       </div>
                     )}
                   </div>
-                  <div className="flex gap-6 mt-3 text-sm text-gray-500">
+                  <div className="mt-3 flex gap-6 text-sm text-muted-foreground">
                     <span>Pain: {v.pain_level}/10</span>
                     <span>Fatigue: {v.fatigue_level}/10</span>
                     <span>Appetite: {v.appetite_level}/10</span>
                   </div>
-                  {v.notes && <p className="text-sm text-gray-400 mt-2">{v.notes}</p>}
+                  {v.notes && <p className="mt-2 text-sm text-muted-foreground">{v.notes}</p>}
                 </div>
               );
             })}
           </div>
         )
       ) : symptoms.length === 0 ? (
-        <div className="text-center py-16">
-          <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <p className="text-xl text-gray-400">No symptoms logged yet</p>
+        <div className="rounded-2xl border border-border bg-card py-16 text-center shadow-soft">
+          <span className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-coral-soft">
+            <AlertTriangle className="h-8 w-8 text-coral" />
+          </span>
+          <p className="text-xl text-ink">No symptoms logged yet</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -279,27 +279,27 @@ function VitalsContent() {
               (f) => s[f.key as keyof SymptomRecord] === true
             ).map((f) => f.label);
             return (
-              <div key={s.id} className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div key={s.id} className="animate-rise rounded-2xl border border-border bg-card p-5 shadow-soft">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="font-bold text-gray-800 text-[17px]">Symptom Log</p>
-                  <span className="text-sm text-gray-400">{s.symptom_date}</span>
+                  <p className="text-[17px] font-bold text-ink">Symptom Log</p>
+                  <span className="text-sm text-muted-foreground">{s.symptom_date}</span>
                 </div>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {activeSymptoms.length > 0 ? (
                     activeSymptoms.map((sym) => (
                       <span
                         key={sym}
-                        className="px-3 py-1 rounded-full text-[13px] font-medium bg-red-50 text-red-600"
+                        className="rounded-full bg-coral-soft px-3 py-1 text-[13px] font-medium text-coral"
                       >
                         {sym}
                       </span>
                     ))
                   ) : (
-                    <span className="text-sm text-gray-400">No symptoms flagged</span>
+                    <span className="text-sm text-muted-foreground">No symptoms flagged</span>
                   )}
                 </div>
-                <p className="text-sm text-gray-500">Severity: {s.symptom_severity_score}/10</p>
-                {s.notes && <p className="text-sm text-gray-400 mt-1">{s.notes}</p>}
+                <p className="text-sm text-muted-foreground">Severity: {s.symptom_severity_score}/10</p>
+                {s.notes && <p className="mt-1 text-sm text-muted-foreground">{s.notes}</p>}
               </div>
             );
           })}
@@ -308,24 +308,25 @@ function VitalsContent() {
 
       {/* Vital form modal */}
       {showVitalForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-8 relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm">
+          <div className="shadow-lift relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[1.75rem] bg-card p-8">
             <button
               onClick={() => setShowVitalForm(false)}
-              className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600"
+              aria-label="Close"
+              className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-ink"
             >
-              <X className="w-6 h-6" />
+              <X className="h-6 w-6" />
             </button>
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Log Vitals</h2>
+            <h2 className="mb-6 text-3xl">Log Vitals</h2>
             {vFormError && (
-              <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-700 text-[14px]">
+              <div className="mb-4 rounded-xl bg-coral-soft px-4 py-3 text-[14px] font-medium text-coral">
                 {vFormError}
               </div>
             )}
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[14px] font-semibold text-gray-700 mb-1">
+                  <label className={labelClass}>
                     Temperature (°C)
                   </label>
                   <input
@@ -333,58 +334,58 @@ function VitalsContent() {
                     step="0.1"
                     value={temperature}
                     onChange={(e) => setTemperature(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                    className={inputClass}
                     placeholder="37.0"
                   />
                 </div>
                 <div>
-                  <label className="block text-[14px] font-semibold text-gray-700 mb-1">
+                  <label className={labelClass}>
                     Heart Rate (bpm)
                   </label>
                   <input
                     type="number"
                     value={heartRate}
                     onChange={(e) => setHeartRate(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                    className={inputClass}
                     placeholder="72"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[14px] font-semibold text-gray-700 mb-1">
+                  <label className={labelClass}>
                     Oxygen Level (%)
                   </label>
                   <input
                     type="number"
                     value={oxygenLevel}
                     onChange={(e) => setOxygenLevel(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                    className={inputClass}
                     placeholder="98"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-[14px] font-semibold text-gray-700 mb-1">
+                    <label className={labelClass}>
                       Systolic
                     </label>
                     <input
                       type="number"
                       value={systolic}
                       onChange={(e) => setSystolic(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                      className={inputClass}
                       placeholder="120"
                     />
                   </div>
                   <div>
-                    <label className="block text-[14px] font-semibold text-gray-700 mb-1">
+                    <label className={labelClass}>
                       Diastolic
                     </label>
                     <input
                       type="number"
                       value={diastolic}
                       onChange={(e) => setDiastolic(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2"
+                      className={inputClass}
                       placeholder="80"
                     />
                   </div>
@@ -392,7 +393,7 @@ function VitalsContent() {
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[14px] font-semibold text-gray-700 mb-1">
+                  <label className={labelClass}>
                     Pain (0–10)
                   </label>
                   <input
@@ -401,12 +402,12 @@ function VitalsContent() {
                     max="10"
                     value={painLevel}
                     onChange={(e) => setPainLevel(e.target.value)}
-                    className="w-full"
+                    className="w-full accent-teal"
                   />
-                  <p className="text-center text-sm text-gray-500">{painLevel}</p>
+                  <p className="text-center text-sm text-muted-foreground">{painLevel}</p>
                 </div>
                 <div>
-                  <label className="block text-[14px] font-semibold text-gray-700 mb-1">
+                  <label className={labelClass}>
                     Fatigue (0–10)
                   </label>
                   <input
@@ -415,12 +416,12 @@ function VitalsContent() {
                     max="10"
                     value={fatigueLevel}
                     onChange={(e) => setFatigueLevel(e.target.value)}
-                    className="w-full"
+                    className="w-full accent-teal"
                   />
-                  <p className="text-center text-sm text-gray-500">{fatigueLevel}</p>
+                  <p className="text-center text-sm text-muted-foreground">{fatigueLevel}</p>
                 </div>
                 <div>
-                  <label className="block text-[14px] font-semibold text-gray-700 mb-1">
+                  <label className={labelClass}>
                     Appetite (0–10)
                   </label>
                   <input
@@ -429,25 +430,24 @@ function VitalsContent() {
                     max="10"
                     value={appetiteLevel}
                     onChange={(e) => setAppetiteLevel(e.target.value)}
-                    className="w-full"
+                    className="w-full accent-teal"
                   />
-                  <p className="text-center text-sm text-gray-500">{appetiteLevel}</p>
+                  <p className="text-center text-sm text-muted-foreground">{appetiteLevel}</p>
                 </div>
               </div>
               <div>
-                <label className="block text-[14px] font-semibold text-gray-700 mb-1">Notes</label>
+                <label className={labelClass}>Notes</label>
                 <textarea
                   value={vitalNotes}
                   onChange={(e) => setVitalNotes(e.target.value)}
                   rows={2}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2 resize-none"
+                  className={`${inputClass} resize-none`}
                 />
               </div>
               <button
                 onClick={handleCreateVital}
                 disabled={vFormLoading}
-                className="w-full py-3 rounded-xl text-white font-semibold text-[16px] hover:opacity-90 disabled:opacity-50 transition"
-                style={{ backgroundColor: TEAL }}
+                className="w-full rounded-full bg-teal py-3 text-[16px] font-semibold text-white transition-all hover:bg-teal-deep disabled:opacity-50"
               >
                 {vFormLoading ? 'Saving…' : 'Save Vitals'}
               </button>
@@ -458,17 +458,18 @@ function VitalsContent() {
 
       {/* Symptom form modal */}
       {showSymptomForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-8 relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm">
+          <div className="shadow-lift relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[1.75rem] bg-card p-8">
             <button
               onClick={() => setShowSymptomForm(false)}
-              className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600"
+              aria-label="Close"
+              className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-ink"
             >
-              <X className="w-6 h-6" />
+              <X className="h-6 w-6" />
             </button>
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Log Symptoms</h2>
+            <h2 className="mb-6 text-3xl">Log Symptoms</h2>
             {sFormError && (
-              <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-700 text-[14px]">
+              <div className="mb-4 rounded-xl bg-coral-soft px-4 py-3 text-[14px] font-medium text-coral">
                 {sFormError}
               </div>
             )}
@@ -477,7 +478,7 @@ function VitalsContent() {
                 {SYMPTOM_FLAGS.map((f) => (
                   <label
                     key={f.key}
-                    className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition"
+                    className="flex cursor-pointer items-center gap-3 rounded-xl border border-border p-3 transition-colors hover:bg-muted"
                   >
                     <input
                       type="checkbox"
@@ -485,14 +486,14 @@ function VitalsContent() {
                       onChange={(e) =>
                         setSymptomFlags({ ...symptomFlags, [f.key]: e.target.checked })
                       }
-                      className="w-5 h-5 rounded"
+                      className="h-5 w-5 rounded accent-teal"
                     />
-                    <span className="text-[15px] text-gray-700">{f.label}</span>
+                    <span className="text-[15px] text-ink">{f.label}</span>
                   </label>
                 ))}
               </div>
               <div>
-                <label className="block text-[14px] font-semibold text-gray-700 mb-1">
+                <label className={labelClass}>
                   Severity Score (0–10)
                 </label>
                 <input
@@ -501,24 +502,23 @@ function VitalsContent() {
                   max="10"
                   value={severityScore}
                   onChange={(e) => setSeverityScore(e.target.value)}
-                  className="w-full"
+                  className="w-full accent-teal"
                 />
-                <p className="text-center text-sm text-gray-500">{severityScore}</p>
+                <p className="text-center text-sm text-muted-foreground">{severityScore}</p>
               </div>
               <div>
-                <label className="block text-[14px] font-semibold text-gray-700 mb-1">Notes</label>
+                <label className={labelClass}>Notes</label>
                 <textarea
                   value={symptomNotes}
                   onChange={(e) => setSymptomNotes(e.target.value)}
                   rows={2}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[16px] focus:outline-none focus:ring-2 resize-none"
+                  className={`${inputClass} resize-none`}
                 />
               </div>
               <button
                 onClick={handleCreateSymptom}
                 disabled={sFormLoading}
-                className="w-full py-3 rounded-xl text-white font-semibold text-[16px] hover:opacity-90 disabled:opacity-50 transition"
-                style={{ backgroundColor: CORAL }}
+                className="w-full rounded-full bg-coral py-3 text-[16px] font-semibold text-white transition-all hover:bg-destructive disabled:opacity-50"
               >
                 {sFormLoading ? 'Saving…' : 'Save Symptoms'}
               </button>
