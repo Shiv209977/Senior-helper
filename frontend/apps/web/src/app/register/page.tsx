@@ -8,7 +8,7 @@ import { register as apiRegister } from '@/lib/api/auth';
 import { useAuthStore } from '@/lib/store/auth';
 
 const inputClass =
-  'w-full rounded-xl border border-border bg-card px-4 py-3.5 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 placeholder:text-muted-foreground/55';
+  'w-full rounded-xl border border-transparent bg-muted/50 px-4 py-3.5 text-[16px] text-ink transition-colors focus:border-ring focus:bg-card focus:outline-none focus:ring-2 focus:ring-ring/30 placeholder:text-muted-foreground/55';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -22,8 +22,30 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const emailError = email.length > 0 && !emailValid ? 'Enter a valid email address' : '';
+
+  // Password strength: 0–4 based on length + character variety.
+  const pwScore = [
+    password.length >= 8,
+    /[a-z]/.test(password) && /[A-Z]/.test(password),
+    /\d/.test(password),
+    /[^A-Za-z0-9]/.test(password),
+  ].filter(Boolean).length;
+  const STRENGTH = [
+    { label: '', color: '' },
+    { label: 'Weak', color: 'bg-coral' },
+    { label: 'Fair', color: 'bg-gold' },
+    { label: 'Good', color: 'bg-sage' },
+    { label: 'Strong', color: 'bg-teal' },
+  ];
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!emailValid) {
+      setError('Please enter a valid email address.');
+      return;
+    }
     setError('');
     setLoading(true);
     try {
@@ -116,9 +138,11 @@ export default function RegisterPage() {
               required
               autoComplete="email"
               inputMode="email"
-              className={inputClass}
+              aria-invalid={!!emailError}
+              className={`${inputClass} ${emailError ? 'border-coral ring-2 ring-coral/30' : ''}`}
               placeholder="you@example.in"
             />
+            {emailError && <p className="mt-1 text-[13px] font-medium text-coral">{emailError}</p>}
           </div>
 
           <div>
@@ -159,6 +183,23 @@ export default function RegisterPage() {
                 {showPw ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
+            {password.length > 0 && (
+              <div className="mt-2 flex items-center gap-2">
+                <div className="flex flex-1 gap-1">
+                  {[0, 1, 2, 3].map((i) => (
+                    <span
+                      key={i}
+                      className={`h-1.5 flex-1 rounded-full transition-colors ${
+                        i < pwScore ? STRENGTH[pwScore].color : 'bg-muted'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-[12px] font-semibold text-muted-foreground">
+                  {STRENGTH[pwScore].label}
+                </span>
+              </div>
+            )}
           </div>
 
           <button

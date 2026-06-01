@@ -4,11 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 import AuthGuard from '@/components/AuthGuard';
 import AppLayout from '@/components/AppLayout';
 import { Pill, Plus, X, Clock } from 'lucide-react';
+import { toast } from 'sonner';
 import { listMedications, createMedication } from '@/lib/api/medications';
 import type { Medication } from '@/lib/api/types';
+import { PageHeader, EmptyState, Spinner, useDialogA11y } from '@/components/ui-kit';
+import { formatDate } from '@/lib/format';
 
 const inputClass =
-  'w-full rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 placeholder:text-muted-foreground/55';
+  'w-full rounded-xl border border-transparent bg-muted/50 px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:bg-card focus:outline-none focus:ring-2 focus:ring-ring/30 placeholder:text-muted-foreground/55';
 const labelClass = 'mb-1 block text-[14px] font-semibold text-ink';
 
 function MedicationsContent() {
@@ -74,6 +77,7 @@ function MedicationsContent() {
       setDosage('');
       setInstructions('');
       setTimes('09:00');
+      toast.success('Medication added');
       fetchMeds();
     } catch (err: any) {
       setFormError(err.message);
@@ -82,27 +86,26 @@ function MedicationsContent() {
     }
   };
 
+  const dialogRef = useDialogA11y<HTMLDivElement>(() => setShowForm(false));
+
   const totalPages = Math.ceil(totalCount / 20);
 
   return (
     <div>
-      <div className="animate-rise mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="flex items-center gap-3 text-4xl">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-coral-soft">
-              <Pill className="h-6 w-6 text-coral" />
-            </span>
-            Medications
-          </h1>
-          <p className="mt-2 text-xl text-muted-foreground">Manage your medication schedule</p>
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 rounded-full bg-teal px-6 py-3 text-[16px] font-semibold text-white shadow-soft transition-all hover:bg-teal-deep hover:shadow-lift"
-        >
-          <Plus className="h-5 w-5" /> Add Medication
-        </button>
-      </div>
+      <PageHeader
+        icon={<Pill className="h-6 w-6" />}
+        title="Medications"
+        subtitle="Manage your medication schedule"
+        accent="coral"
+        action={
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 rounded-full bg-teal px-6 py-3 text-[16px] font-semibold text-white shadow-soft transition-all hover:bg-teal-deep hover:shadow-lift"
+          >
+            <Plus className="h-5 w-5" /> Add Medication
+          </button>
+        }
+      />
 
       {error && (
         <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
@@ -113,7 +116,13 @@ function MedicationsContent() {
       {/* Add form modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm">
-          <div className="shadow-lift relative w-full max-w-lg rounded-[1.75rem] bg-card p-8">
+          <div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            tabIndex={-1}
+            className="shadow-lift relative w-full max-w-lg rounded-[1.75rem] bg-card p-8"
+          >
             <button
               onClick={() => setShowForm(false)}
               aria-label="Close"
@@ -213,20 +222,14 @@ function MedicationsContent() {
       )}
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div
-            className="h-11 w-11 rounded-full border-4 border-teal-soft border-t-teal"
-            style={{ animation: 'spin 0.9s linear infinite' }}
-          />
-        </div>
+        <Spinner />
       ) : meds.length === 0 ? (
-        <div className="rounded-2xl border border-border bg-card py-20 text-center shadow-soft">
-          <span className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-coral-soft">
-            <Pill className="h-8 w-8 text-coral" />
-          </span>
-          <p className="text-xl text-ink">No medications yet</p>
-          <p className="mt-1 text-muted-foreground">Click &ldquo;Add Medication&rdquo; to get started</p>
-        </div>
+        <EmptyState
+          icon={<Pill className="h-8 w-8" />}
+          title="No medications yet"
+          hint="Click “Add Medication” to get started"
+          accent="coral"
+        />
       ) : (
         <>
           <div className="space-y-3">
@@ -250,8 +253,8 @@ function MedicationsContent() {
                     <Clock className="h-3.5 w-3.5" /> {m.scheduled_times.join(', ')}
                   </p>
                   <p>
-                    {m.start_date}
-                    {m.end_date ? ` — ${m.end_date}` : ''}
+                    {formatDate(m.start_date)}
+                    {m.end_date ? ` — ${formatDate(m.end_date)}` : ''}
                   </p>
                 </div>
                 <span

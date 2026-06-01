@@ -4,12 +4,16 @@ import { useState, useEffect, useCallback } from 'react';
 import AuthGuard from '@/components/AuthGuard';
 import AppLayout from '@/components/AppLayout';
 import { Activity, Plus, X, ThermometerSun, Heart, Droplets, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
 import { listVitals, createVital } from '@/lib/api/vitals';
 import { listSymptoms, createSymptom } from '@/lib/api/symptoms';
 import type { VitalSign, SymptomRecord } from '@/lib/api/types';
+import { PageHeader, useDialogA11y } from '@/components/ui-kit';
+import VitalsTrends from '@/components/VitalsTrends';
+import { formatDate } from '@/lib/format';
 
 const inputClass =
-  'w-full rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 placeholder:text-muted-foreground/55';
+  'w-full rounded-xl border border-transparent bg-muted/50 px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:bg-card focus:outline-none focus:ring-2 focus:ring-ring/30 placeholder:text-muted-foreground/55';
 const labelClass = 'mb-1 block text-[14px] font-semibold text-ink';
 
 const SYMPTOM_FLAGS = [
@@ -56,6 +60,9 @@ function VitalsContent() {
 
   const [todayStr, setTodayStr] = useState('');
   const [nowISO, setNowISO] = useState('');
+
+  const vitalDialogRef = useDialogA11y<HTMLDivElement>(() => setShowVitalForm(false));
+  const symptomDialogRef = useDialogA11y<HTMLDivElement>(() => setShowSymptomForm(false));
 
   useEffect(() => {
     const d = new Date();
@@ -109,6 +116,7 @@ function VitalsContent() {
       setFatigueLevel('0');
       setAppetiteLevel('5');
       setVitalNotes('');
+      toast.success('Vitals logged');
       fetchAll();
     } catch (err: any) {
       setVFormError(err.message);
@@ -132,6 +140,7 @@ function VitalsContent() {
       setSymptomFlags({});
       setSeverityScore('0');
       setSymptomNotes('');
+      toast.success('Symptoms logged');
       fetchAll();
     } catch (err: any) {
       setSFormError(err.message);
@@ -142,37 +151,36 @@ function VitalsContent() {
 
   return (
     <div>
-      <div className="animate-rise mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="flex items-center gap-3 text-4xl">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-teal-soft">
-              <Activity className="h-6 w-6 text-teal" />
-            </span>
-            Vitals &amp; Symptoms
-          </h1>
-          <p className="mt-2 text-xl text-muted-foreground">Track your health data</p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setShowVitalForm(true)}
-            className="flex items-center gap-2 rounded-full bg-teal px-5 py-2.5 text-[15px] font-semibold text-white shadow-soft transition-all hover:bg-teal-deep hover:shadow-lift"
-          >
-            <Plus className="h-4 w-4" /> Log Vitals
-          </button>
-          <button
-            onClick={() => setShowSymptomForm(true)}
-            className="flex items-center gap-2 rounded-full bg-coral px-5 py-2.5 text-[15px] font-semibold text-white shadow-soft transition-all hover:bg-destructive hover:shadow-lift"
-          >
-            <Plus className="h-4 w-4" /> Log Symptoms
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        icon={<Activity className="h-6 w-6" />}
+        title="Vitals & Symptoms"
+        subtitle="Track your health data over time"
+        accent="teal"
+        action={
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowVitalForm(true)}
+              className="flex items-center gap-2 rounded-full bg-teal px-5 py-2.5 text-[15px] font-semibold text-white shadow-soft transition-all hover:bg-teal-deep hover:shadow-lift"
+            >
+              <Plus className="h-4 w-4" /> Log Vitals
+            </button>
+            <button
+              onClick={() => setShowSymptomForm(true)}
+              className="flex items-center gap-2 rounded-full bg-coral px-5 py-2.5 text-[15px] font-semibold text-white shadow-soft transition-all hover:bg-destructive hover:shadow-lift"
+            >
+              <Plus className="h-4 w-4" /> Log Symptoms
+            </button>
+          </div>
+        }
+      />
 
       {error && (
         <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
           {error}
         </div>
       )}
+
+      {vitals.length > 0 && <VitalsTrends vitals={vitals} />}
 
       {/* Tabs */}
       <div className="mb-6 flex gap-2">
@@ -212,7 +220,7 @@ function VitalsContent() {
                 <div key={v.id} className="animate-rise rounded-2xl border border-border bg-card p-5 shadow-soft">
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-[17px] font-bold text-ink">Vitals Record</p>
-                    <span className="text-sm text-muted-foreground">{dateLabel}</span>
+                    <span className="text-sm text-muted-foreground">{formatDate(dateLabel)}</span>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {v.temperature && (
@@ -282,7 +290,7 @@ function VitalsContent() {
               <div key={s.id} className="animate-rise rounded-2xl border border-border bg-card p-5 shadow-soft">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-[17px] font-bold text-ink">Symptom Log</p>
-                  <span className="text-sm text-muted-foreground">{s.symptom_date}</span>
+                  <span className="text-sm text-muted-foreground">{formatDate(s.symptom_date)}</span>
                 </div>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {activeSymptoms.length > 0 ? (
@@ -309,7 +317,13 @@ function VitalsContent() {
       {/* Vital form modal */}
       {showVitalForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm">
-          <div className="shadow-lift relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[1.75rem] bg-card p-8">
+          <div
+            ref={vitalDialogRef}
+            role="dialog"
+            aria-modal="true"
+            tabIndex={-1}
+            className="shadow-lift relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[1.75rem] bg-card p-8"
+          >
             <button
               onClick={() => setShowVitalForm(false)}
               aria-label="Close"
@@ -459,7 +473,13 @@ function VitalsContent() {
       {/* Symptom form modal */}
       {showSymptomForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm">
-          <div className="shadow-lift relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[1.75rem] bg-card p-8">
+          <div
+            ref={symptomDialogRef}
+            role="dialog"
+            aria-modal="true"
+            tabIndex={-1}
+            className="shadow-lift relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[1.75rem] bg-card p-8"
+          >
             <button
               onClick={() => setShowSymptomForm(false)}
               aria-label="Close"

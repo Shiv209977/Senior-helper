@@ -6,6 +6,9 @@ import AppLayout from '@/components/AppLayout';
 import { AlertTriangle, Phone, X } from 'lucide-react';
 import { listEmergencies, createEmergency } from '@/lib/api/emergencies';
 import type { EmergencyRequest } from '@/lib/api/types';
+import { toast } from 'sonner';
+import { PageHeader, useDialogA11y } from '@/components/ui-kit';
+import { formatDate } from '@/lib/format';
 
 const STATUS_PILL: Record<string, string> = {
   active: 'bg-coral text-white',
@@ -46,6 +49,7 @@ function EmergenciesContent() {
       await createEmergency({ message });
       setShowConfirm(false);
       setMessage('');
+      toast.success('Help is on the way', { description: 'Your care team has been alerted.' });
       fetchEmergencies();
     } catch (err: any) {
       setError(err.message);
@@ -54,19 +58,18 @@ function EmergenciesContent() {
     }
   };
 
+  const dialogRef = useDialogA11y<HTMLDivElement>(() => setShowConfirm(false));
+
   const hasActive = emergencies.some((e) => e.status === 'active');
 
   return (
     <div>
-      <div className="animate-rise mb-8">
-        <h1 className="flex items-center gap-3 text-4xl">
-          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-coral-soft">
-            <AlertTriangle className="h-6 w-6 text-coral" />
-          </span>
-          Emergency
-        </h1>
-        <p className="mt-2 text-xl text-muted-foreground">Request urgent help from your care team</p>
-      </div>
+      <PageHeader
+        icon={<AlertTriangle className="h-6 w-6" />}
+        title="Emergency"
+        subtitle="Request urgent help from your care team"
+        accent="coral"
+      />
 
       {error && (
         <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
@@ -101,7 +104,13 @@ function EmergenciesContent() {
       {/* Confirmation modal */}
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm">
-          <div className="shadow-lift relative w-full max-w-md rounded-[1.75rem] bg-card p-8 text-center">
+          <div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            tabIndex={-1}
+            className="shadow-lift relative w-full max-w-md rounded-[1.75rem] bg-card p-8 text-center"
+          >
             <button
               onClick={() => setShowConfirm(false)}
               aria-label="Close"
@@ -121,7 +130,7 @@ function EmergenciesContent() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={2}
-              className="mb-4 w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 placeholder:text-muted-foreground/55"
+              className="mb-4 w-full resize-none rounded-xl border border-transparent bg-muted/50 px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:bg-card focus:outline-none focus:ring-2 focus:ring-ring/30 placeholder:text-muted-foreground/55"
               placeholder="Optional: describe your situation"
             />
             <div className="flex gap-3">
@@ -170,7 +179,7 @@ function EmergenciesContent() {
                   <p className="text-[16px] font-semibold capitalize text-ink">{e.emergency_type}</p>
                   {e.message && <p className="text-sm text-muted-foreground">{e.message}</p>}
                 </div>
-                <span className="text-sm text-muted-foreground">{dateLabel}</span>
+                <span className="text-sm text-muted-foreground">{formatDate(dateLabel)}</span>
                 <span
                   className={`rounded-full px-3 py-1 text-[12px] font-bold capitalize ${STATUS_PILL[e.status] ?? STATUS_PILL.cancelled}`}
                 >

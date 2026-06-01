@@ -7,9 +7,11 @@ import { User, Save } from 'lucide-react';
 import { listCaregiverProfiles, updateCaregiverProfile } from '@/lib/api/profiles';
 import { useAuthStore } from '@/lib/store/auth';
 import type { CaregiverProfile } from '@/lib/api/types';
+import { toast } from 'sonner';
+import { PageHeader, Spinner } from '@/components/ui-kit';
 
 const inputClass =
-  'w-full rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 placeholder:text-muted-foreground/55';
+  'w-full rounded-xl border border-transparent bg-muted/50 px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:bg-card focus:outline-none focus:ring-2 focus:ring-ring/30 placeholder:text-muted-foreground/55';
 const labelClass = 'mb-1 block text-[14px] font-semibold text-ink';
 
 function CaregiverProfileContent() {
@@ -18,7 +20,6 @@ function CaregiverProfileContent() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
   const [relationship, setRelationship] = useState('');
   const [phone, setPhone] = useState('');
@@ -52,7 +53,6 @@ function CaregiverProfileContent() {
   const handleSave = async () => {
     if (!profile) return;
     setError('');
-    setSuccess('');
     setSaving(true);
     try {
       await updateCaregiverProfile(profile.id, {
@@ -61,8 +61,7 @@ function CaregiverProfileContent() {
         address,
         availability_notes: availability,
       });
-      setSuccess('Profile updated!');
-      setTimeout(() => setSuccess(''), 3000);
+      toast.success('Profile updated');
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -71,39 +70,20 @@ function CaregiverProfileContent() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <div
-          className="h-11 w-11 rounded-full border-4 border-teal-soft border-t-teal"
-          style={{ animation: 'spin 0.9s linear infinite' }}
-        />
-        <style jsx global>{`
-          @keyframes spin {
-            to {
-              transform: rotate(360deg);
-            }
-          }
-        `}</style>
-      </div>
-    );
+    return <Spinner />;
   }
 
   return (
     <div>
-      <h1 className="animate-rise mb-8 flex items-center gap-3 text-4xl">
-        <span className="grid h-11 w-11 place-items-center rounded-2xl bg-teal-soft">
-          <User className="h-6 w-6 text-teal" />
-        </span>
-        My Profile
-      </h1>
+      <PageHeader
+        icon={<User className="h-6 w-6" />}
+        title="My Profile"
+        subtitle="Your details and availability"
+        accent="teal"
+      />
       {error && (
         <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
           {error}
-        </div>
-      )}
-      {success && (
-        <div className="mb-6 rounded-2xl border border-teal/20 bg-teal-soft px-5 py-4 text-[15px] font-medium text-teal-deep">
-          {success}
         </div>
       )}
 

@@ -6,6 +6,8 @@ import AppLayout from '@/components/AppLayout';
 import { FileText } from 'lucide-react';
 import { listAuditLogs } from '@/lib/api/admin';
 import type { AuditLog } from '@/lib/api/types';
+import { PageHeader, EmptyState, Spinner } from '@/components/ui-kit';
+import { formatDate } from '@/lib/format';
 
 const thClass = 'px-6 py-4 text-[14px] font-semibold text-muted-foreground';
 
@@ -38,15 +40,12 @@ function AuditLogsContent() {
 
   return (
     <div>
-      <div className="animate-rise mb-8">
-        <h1 className="flex items-center gap-3 text-4xl">
-          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-teal-soft">
-            <FileText className="h-6 w-6 text-teal" />
-          </span>
-          Audit Logs
-        </h1>
-        <p className="mt-2 text-xl text-muted-foreground">{totalCount} log entries</p>
-      </div>
+      <PageHeader
+        icon={<FileText className="h-6 w-6" />}
+        title="Audit Logs"
+        subtitle={`${totalCount} log entries`}
+        accent="teal"
+      />
 
       {error && (
         <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
@@ -55,19 +54,9 @@ function AuditLogsContent() {
       )}
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div
-            className="h-11 w-11 rounded-full border-4 border-teal-soft border-t-teal"
-            style={{ animation: 'spin 0.9s linear infinite' }}
-          />
-        </div>
+        <Spinner />
       ) : logs.length === 0 ? (
-        <div className="rounded-2xl border border-border bg-card py-16 text-center shadow-soft">
-          <span className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-teal-soft">
-            <FileText className="h-8 w-8 text-teal" />
-          </span>
-          <p className="text-xl text-ink">No audit logs</p>
-        </div>
+        <EmptyState icon={<FileText className="h-8 w-8" />} title="No audit logs" accent="teal" />
       ) : (
         <>
           <div className="animate-rise overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
@@ -97,7 +86,7 @@ function AuditLogsContent() {
                         <td className="max-w-[200px] truncate px-6 py-4 font-mono text-[13px] text-muted-foreground">
                           {metaStr}
                         </td>
-                        <td className="px-6 py-4 text-[14px] text-muted-foreground">{dateLabel}</td>
+                        <td className="px-6 py-4 text-[14px] text-muted-foreground">{formatDate(dateLabel)}</td>
                       </tr>
                     );
                   })}

@@ -6,9 +6,11 @@ import AppLayout from '@/components/AppLayout';
 import { Shield, Search, Save, X, UserCheck, UserX } from 'lucide-react';
 import { listUsers, updateUser } from '@/lib/api/admin';
 import type { User } from '@/lib/api/types';
+import { toast } from 'sonner';
+import { PageHeader, Spinner, useDialogA11y } from '@/components/ui-kit';
 
 const inputClass =
-  'w-full rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 placeholder:text-muted-foreground/55';
+  'w-full rounded-xl border border-transparent bg-muted/50 px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:bg-card focus:outline-none focus:ring-2 focus:ring-ring/30 placeholder:text-muted-foreground/55';
 const labelClass = 'mb-1 block text-[14px] font-semibold text-ink';
 const thClass = 'px-6 py-4 text-[14px] font-semibold text-muted-foreground';
 
@@ -68,6 +70,7 @@ function AdminContent() {
     try {
       await updateUser(editUser.id, { full_name: editName, phone: editPhone });
       setEditUser(null);
+      toast.success('User updated');
       fetchUsers();
     } catch (err: any) {
       setError(err.message);
@@ -76,19 +79,18 @@ function AdminContent() {
     }
   };
 
+  const dialogRef = useDialogA11y<HTMLDivElement>(() => setEditUser(null));
+
   const totalPages = Math.ceil(totalCount / 20);
 
   return (
     <div>
-      <div className="animate-rise mb-8">
-        <h1 className="flex items-center gap-3 text-4xl">
-          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-teal-soft">
-            <Shield className="h-6 w-6 text-teal" />
-          </span>
-          User Management
-        </h1>
-        <p className="mt-2 text-xl text-muted-foreground">{totalCount} total users</p>
-      </div>
+      <PageHeader
+        icon={<Shield className="h-6 w-6" />}
+        title="User Management"
+        subtitle={`${totalCount} total users`}
+        accent="teal"
+      />
 
       {error && (
         <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
@@ -97,12 +99,7 @@ function AdminContent() {
       )}
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div
-            className="h-11 w-11 rounded-full border-4 border-teal-soft border-t-teal"
-            style={{ animation: 'spin 0.9s linear infinite' }}
-          />
-        </div>
+        <Spinner />
       ) : (
         <>
           <div className="animate-rise overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
@@ -185,7 +182,13 @@ function AdminContent() {
 
       {editUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm">
-          <div className="shadow-lift relative w-full max-w-md rounded-[1.75rem] bg-card p-8">
+          <div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            tabIndex={-1}
+            className="shadow-lift relative w-full max-w-md rounded-[1.75rem] bg-card p-8"
+          >
             <button
               onClick={() => setEditUser(null)}
               aria-label="Close"

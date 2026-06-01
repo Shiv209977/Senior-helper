@@ -22,6 +22,8 @@ import { listMedicationLogs, updateMedicationLog } from '@/lib/api/medications';
 import { listAppointments } from '@/lib/api/appointments';
 import { listAlerts } from '@/lib/api/alerts';
 import type { MedicationLog, Appointment, Alert } from '@/lib/api/types';
+import { toast } from 'sonner';
+import { formatDate, formatTime } from '@/lib/format';
 
 const QUICK_ACTIONS = [
   { label: 'Log Vitals', href: '/patient/vitals', icon: Activity, fg: 'text-teal', tile: 'bg-teal-soft' },
@@ -89,6 +91,7 @@ function TodayContent() {
     try {
       await updateMedicationLog(logId, { status });
       setMedLogs((prev) => prev.map((l) => (l.id === logId ? { ...l, status } : l)));
+      toast.success(status === 'taken' ? 'Marked as taken' : status === 'missed' ? 'Marked as missed' : 'Dose skipped');
     } catch (err: any) {
       console.error(err);
       setError(err.message);
@@ -246,10 +249,10 @@ function TodayContent() {
                   <p className="text-[16px] font-semibold text-ink">{apt.title}</p>
                   <div className="mt-1 flex items-center gap-3 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
-                      <CalendarCheck className="h-3.5 w-3.5" /> {apt.date}
+                      <CalendarCheck className="h-3.5 w-3.5" /> {formatDate(apt.date)}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5" /> {apt.time}
+                      <Clock className="h-3.5 w-3.5" /> {formatTime(apt.time)}
                     </span>
                   </div>
                   {apt.doctor_name && (
@@ -262,7 +265,7 @@ function TodayContent() {
         </div>
 
         {/* Recent Alerts */}
-        <div className="animate-rise rounded-2xl border border-border bg-card p-6 shadow-soft lg:col-span-2" style={{ animationDelay: '0.22s' }}>
+        <div className="animate-rise rounded-2xl border border-border bg-card p-6 shadow-soft lg:col-span-2" style={{ animationDelay: '0.22s' }} aria-live="polite">
           <div className="mb-5 flex items-center justify-between">
             <h2 className="flex items-center gap-2.5 text-2xl">
               <span className="grid h-9 w-9 place-items-center rounded-xl bg-coral-soft">

@@ -8,7 +8,7 @@ import { login as apiLogin } from '@/lib/api/auth';
 import { useAuthStore } from '@/lib/store/auth';
 
 const inputClass =
-  'w-full rounded-xl border border-border bg-card px-4 py-3.5 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 placeholder:text-muted-foreground/55';
+  'w-full rounded-xl border border-transparent bg-muted/50 px-4 py-3.5 text-[16px] text-ink transition-colors focus:border-ring focus:bg-card focus:outline-none focus:ring-2 focus:ring-ring/30 placeholder:text-muted-foreground/55';
 
 export default function LoginPage() {
   const router = useRouter();

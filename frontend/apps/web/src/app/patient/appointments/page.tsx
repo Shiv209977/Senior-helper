@@ -4,11 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 import AuthGuard from '@/components/AuthGuard';
 import AppLayout from '@/components/AppLayout';
 import { CalendarCheck, Plus, X, Clock } from 'lucide-react';
+import { toast } from 'sonner';
 import { listAppointments, createAppointment } from '@/lib/api/appointments';
 import type { Appointment } from '@/lib/api/types';
+import { PageHeader, EmptyState, Spinner, useDialogA11y } from '@/components/ui-kit';
+import { formatDate, formatTime } from '@/lib/format';
 
 const inputClass =
-  'w-full rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 placeholder:text-muted-foreground/55';
+  'w-full rounded-xl border border-transparent bg-muted/50 px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:bg-card focus:outline-none focus:ring-2 focus:ring-ring/30 placeholder:text-muted-foreground/55';
 const labelClass = 'mb-1 block text-[14px] font-semibold text-ink';
 
 const APT_TYPES = ['consultation', 'treatment', 'scan', 'lab_test', 'follow_up', 'other'] as const;
@@ -76,6 +79,7 @@ function AppointmentsContent() {
       setHospital('');
       setDoctor('');
       setNotes('');
+      toast.success('Appointment saved');
       fetchApts();
     } catch (err: any) {
       setFormError(err.message);
@@ -84,27 +88,26 @@ function AppointmentsContent() {
     }
   };
 
+  const dialogRef = useDialogA11y<HTMLDivElement>(() => setShowForm(false));
+
   const totalPages = Math.ceil(totalCount / 20);
 
   return (
     <div>
-      <div className="animate-rise mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="flex items-center gap-3 text-4xl">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-lavender-soft">
-              <CalendarCheck className="h-6 w-6 text-lavender" />
-            </span>
-            Appointments
-          </h1>
-          <p className="mt-2 text-xl text-muted-foreground">View and schedule your appointments</p>
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 rounded-full bg-teal px-6 py-3 text-[16px] font-semibold text-white shadow-soft transition-all hover:bg-teal-deep hover:shadow-lift"
-        >
-          <Plus className="h-5 w-5" /> New Appointment
-        </button>
-      </div>
+      <PageHeader
+        icon={<CalendarCheck className="h-6 w-6" />}
+        title="Appointments"
+        subtitle="View and schedule your appointments"
+        accent="lavender"
+        action={
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 rounded-full bg-teal px-6 py-3 text-[16px] font-semibold text-white shadow-soft transition-all hover:bg-teal-deep hover:shadow-lift"
+          >
+            <Plus className="h-5 w-5" /> New Appointment
+          </button>
+        }
+      />
 
       {error && (
         <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
@@ -114,7 +117,13 @@ function AppointmentsContent() {
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm">
-          <div className="shadow-lift relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[1.75rem] bg-card p-8">
+          <div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            tabIndex={-1}
+            className="shadow-lift relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[1.75rem] bg-card p-8"
+          >
             <button
               onClick={() => setShowForm(false)}
               aria-label="Close"
@@ -213,19 +222,9 @@ function AppointmentsContent() {
       )}
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div
-            className="h-11 w-11 rounded-full border-4 border-teal-soft border-t-teal"
-            style={{ animation: 'spin 0.9s linear infinite' }}
-          />
-        </div>
+        <Spinner />
       ) : apts.length === 0 ? (
-        <div className="rounded-2xl border border-border bg-card py-20 text-center shadow-soft">
-          <span className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-lavender-soft">
-            <CalendarCheck className="h-8 w-8 text-lavender" />
-          </span>
-          <p className="text-xl text-ink">No appointments yet</p>
-        </div>
+        <EmptyState icon={<CalendarCheck className="h-8 w-8" />} title="No appointments yet" accent="lavender" />
       ) : (
         <>
           <div className="space-y-3">
@@ -247,10 +246,10 @@ function AppointmentsContent() {
                 </div>
                 <div className="text-right text-sm text-muted-foreground">
                   <p className="flex items-center justify-end gap-1">
-                    <CalendarCheck className="h-3.5 w-3.5" /> {a.date}
+                    <CalendarCheck className="h-3.5 w-3.5" /> {formatDate(a.date)}
                   </p>
                   <p className="flex items-center justify-end gap-1">
-                    <Clock className="h-3.5 w-3.5" /> {a.time}
+                    <Clock className="h-3.5 w-3.5" /> {formatTime(a.time)}
                   </p>
                 </div>
                 <span

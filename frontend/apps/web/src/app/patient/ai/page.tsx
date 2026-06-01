@@ -6,6 +6,9 @@ import AppLayout from '@/components/AppLayout';
 import { Brain, Play, AlertTriangle, TrendingUp, TrendingDown, Minus, Info } from 'lucide-react';
 import { listAssessments, runAssessment } from '@/lib/api/ai';
 import type { AIRiskAssessment } from '@/lib/api/types';
+import { toast } from 'sonner';
+import { PageHeader, Spinner } from '@/components/ui-kit';
+import { formatDate } from '@/lib/format';
 
 const CATEGORY: Record<string, { chip: string; text: string; ring: string; tile: string }> = {
   low: { chip: 'bg-teal-soft text-teal-deep', text: 'text-teal-deep', ring: 'var(--teal)', tile: 'bg-teal-soft text-teal-deep' },
@@ -44,6 +47,7 @@ function AIContent() {
     try {
       const result = await runAssessment();
       setLatest(result);
+      toast.success('Assessment complete');
       fetchAssessments();
     } catch (err: any) {
       console.error(err);
@@ -61,24 +65,21 @@ function AIContent() {
 
   return (
     <div>
-      <div className="animate-rise mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="flex items-center gap-3 text-4xl">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-lavender-soft">
-              <Brain className="h-6 w-6 text-lavender" />
-            </span>
-            AI Risk Assessment
-          </h1>
-          <p className="mt-2 text-xl text-muted-foreground">Get an AI-powered health risk check</p>
-        </div>
-        <button
-          onClick={handleRun}
-          disabled={running}
-          className="flex items-center gap-2 rounded-full bg-lavender px-6 py-3 text-[16px] font-semibold text-white shadow-soft transition-all hover:bg-lavender-deep hover:shadow-lift disabled:opacity-50"
-        >
-          <Play className="h-5 w-5" /> {running ? 'Running…' : 'Run Assessment'}
-        </button>
-      </div>
+      <PageHeader
+        icon={<Brain className="h-6 w-6" />}
+        title="AI Risk Assessment"
+        subtitle="Get an AI-powered health risk check"
+        accent="lavender"
+        action={
+          <button
+            onClick={handleRun}
+            disabled={running}
+            className="flex items-center gap-2 rounded-full bg-lavender px-6 py-3 text-[16px] font-semibold text-white shadow-soft transition-all hover:bg-lavender-deep hover:shadow-lift disabled:opacity-50"
+          >
+            <Play className="h-5 w-5" /> {running ? 'Running…' : 'Run Assessment'}
+          </button>
+        }
+      />
 
       {error && (
         <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
@@ -156,12 +157,7 @@ function AIContent() {
       {/* History */}
       <h2 className="mb-4 text-2xl">Assessment History</h2>
       {loading ? (
-        <div className="flex justify-center py-16">
-          <div
-            className="h-11 w-11 rounded-full border-4 border-teal-soft border-t-teal"
-            style={{ animation: 'spin 0.9s linear infinite' }}
-          />
-        </div>
+        <Spinner className="py-16" />
       ) : assessments.length === 0 ? (
         <div className="rounded-2xl border border-border bg-card py-16 text-center shadow-soft">
           <span className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-lavender-soft">
@@ -188,7 +184,7 @@ function AIContent() {
                   <p className="text-[16px] font-semibold text-ink">{a.risk_category.toUpperCase()} Risk</p>
                   <p className="text-sm text-muted-foreground">{a.reasons[0] ?? 'No findings'}</p>
                 </div>
-                <span className="text-sm text-muted-foreground">{dateLabel}</span>
+                <span className="text-sm text-muted-foreground">{formatDate(dateLabel)}</span>
               </div>
             );
           })}

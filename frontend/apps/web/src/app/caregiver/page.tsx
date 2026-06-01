@@ -3,12 +3,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import AuthGuard from '@/components/AuthGuard';
 import AppLayout from '@/components/AppLayout';
-import { Users, AlertTriangle, Brain, CheckCircle, KeyRound, X } from 'lucide-react';
+import { Users, AlertTriangle, Brain, CheckCircle, KeyRound, X, LayoutDashboard } from 'lucide-react';
 import { listCaregiverLinks, acceptInvite } from '@/lib/api/caregiver-links';
 import { listAlerts, acknowledgeAlert, resolveAlert } from '@/lib/api/alerts';
 import { listEmergencies, acknowledgeEmergency, resolveEmergency } from '@/lib/api/emergencies';
 import { runAssessment } from '@/lib/api/ai';
 import type { CaregiverLink, Alert, EmergencyRequest, AIRiskAssessment } from '@/lib/api/types';
+import { toast } from 'sonner';
+import { PageHeader, Spinner, useDialogA11y } from '@/components/ui-kit';
 
 const SEVERITY: Record<string, { chip: string; text: string }> = {
   low: { chip: 'bg-teal-soft text-teal-deep', text: 'text-teal-deep' },
@@ -65,6 +67,7 @@ function CaregiverContent() {
     try {
       await acceptInvite(inviteCode.trim());
       setInviteCode('');
+      toast.success('Patient linked');
       fetchData();
     } catch (err: any) {
       setError(err.message);
@@ -84,6 +87,7 @@ function CaregiverContent() {
         if (noteModal.action === 'acknowledge') await acknowledgeEmergency(noteModal.id);
         else await resolveEmergency(noteModal.id);
       }
+      toast.success(noteModal.action === 'resolve' ? 'Marked resolved' : 'Acknowledged');
       setNoteModal(null);
       setActionNote('');
       fetchData();
@@ -112,30 +116,23 @@ function CaregiverContent() {
   );
   const openAlerts = alerts.filter((a) => a.status === 'open' || a.status === 'acknowledged');
 
+  const dialogRef = useDialogA11y<HTMLDivElement>(() => {
+    setNoteModal(null);
+    setActionNote('');
+  });
+
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div
-          className="h-11 w-11 rounded-full border-4 border-teal-soft border-t-teal"
-          style={{ animation: 'spin 0.9s linear infinite' }}
-        />
-        <style jsx global>{`
-          @keyframes spin {
-            to {
-              transform: rotate(360deg);
-            }
-          }
-        `}</style>
-      </div>
-    );
+    return <Spinner />;
   }
 
   return (
     <div>
-      <div className="animate-rise mb-8">
-        <h1 className="mb-1.5 text-4xl">Caregiver Dashboard</h1>
-        <p className="text-xl text-muted-foreground">Monitor and support your linked patients</p>
-      </div>
+      <PageHeader
+        icon={<LayoutDashboard className="h-6 w-6" />}
+        title="Caregiver Dashboard"
+        subtitle="Monitor and support your linked patients"
+        accent="teal"
+      />
 
       {error && (
         <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
@@ -154,7 +151,7 @@ function CaregiverContent() {
             value={inviteCode}
             onChange={(e) => setInviteCode(e.target.value)}
             placeholder="Enter invite code from patient"
-            className="min-w-0 flex-1 rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 placeholder:text-muted-foreground/55"
+            className="min-w-0 flex-1 rounded-xl border border-transparent bg-muted/50 px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:bg-card focus:outline-none focus:ring-2 focus:ring-ring/30 placeholder:text-muted-foreground/55"
           />
           <button
             onClick={handleAcceptInvite}
@@ -168,7 +165,7 @@ function CaregiverContent() {
 
       {/* Active emergencies */}
       {activeEmergencies.length > 0 && (
-        <div className="mb-6">
+        <div className="mb-6" role="status" aria-live="assertive">
           <h2 className="mb-3 flex items-center gap-2 font-serif text-xl text-ink">
             <AlertTriangle className="h-5 w-5 text-coral" /> Active Emergencies
           </h2>
@@ -326,7 +323,13 @@ function CaregiverContent() {
       {/* Action note modal */}
       {noteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm">
-          <div className="shadow-lift relative w-full max-w-md rounded-[1.75rem] bg-card p-8">
+          <div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            tabIndex={-1}
+            className="shadow-lift relative w-full max-w-md rounded-[1.75rem] bg-card p-8"
+          >
             <button
               onClick={() => {
                 setNoteModal(null);
@@ -344,7 +347,7 @@ function CaregiverContent() {
               value={actionNote}
               onChange={(e) => setActionNote(e.target.value)}
               rows={3}
-              className="mb-4 w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 placeholder:text-muted-foreground/55"
+              className="mb-4 w-full resize-none rounded-xl border border-transparent bg-muted/50 px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:bg-card focus:outline-none focus:ring-2 focus:ring-ring/30 placeholder:text-muted-foreground/55"
               placeholder="Optional note…"
             />
             <div className="flex gap-3">

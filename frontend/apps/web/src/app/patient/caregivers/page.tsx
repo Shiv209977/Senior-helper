@@ -6,6 +6,8 @@ import AppLayout from '@/components/AppLayout';
 import { Users, Plus, Copy, CheckCircle, XCircle } from 'lucide-react';
 import { listCaregiverLinks, createInvite, revokeLink } from '@/lib/api/caregiver-links';
 import type { CaregiverLink } from '@/lib/api/types';
+import { toast } from 'sonner';
+import { PageHeader, EmptyState, Spinner } from '@/components/ui-kit';
 
 const STATUS_PILL: Record<string, string> = {
   pending: 'bg-gold/20 text-ink',
@@ -42,6 +44,7 @@ function CaregiversContent() {
     setCreating(true);
     try {
       await createInvite();
+      toast.success('Invite code generated');
       fetchLinks();
     } catch (err: any) {
       setError(err.message);
@@ -54,6 +57,7 @@ function CaregiversContent() {
     if (!window.confirm('Revoke this caregiver link?')) return;
     try {
       await revokeLink(id);
+      toast.success('Caregiver link revoked');
       fetchLinks();
     } catch (err: any) {
       setError(err.message);
@@ -63,29 +67,27 @@ function CaregiversContent() {
   const handleCopy = (id: number, code: string) => {
     navigator.clipboard.writeText(code);
     setCopied(id);
+    toast.success('Invite code copied');
     setTimeout(() => setCopied(null), 2000);
   };
 
   return (
     <div>
-      <div className="animate-rise mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="flex items-center gap-3 text-4xl">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-teal-soft">
-              <Users className="h-6 w-6 text-teal" />
-            </span>
-            Caregivers
-          </h1>
-          <p className="mt-2 text-xl text-muted-foreground">Manage your caregiver connections</p>
-        </div>
-        <button
-          onClick={handleCreate}
-          disabled={creating}
-          className="flex items-center gap-2 rounded-full bg-teal px-6 py-3 text-[16px] font-semibold text-white shadow-soft transition-all hover:bg-teal-deep hover:shadow-lift disabled:opacity-50"
-        >
-          <Plus className="h-5 w-5" /> {creating ? 'Creating…' : 'Generate Invite Code'}
-        </button>
-      </div>
+      <PageHeader
+        icon={<Users className="h-6 w-6" />}
+        title="Caregivers"
+        subtitle="Manage your caregiver connections"
+        accent="teal"
+        action={
+          <button
+            onClick={handleCreate}
+            disabled={creating}
+            className="flex items-center gap-2 rounded-full bg-teal px-6 py-3 text-[16px] font-semibold text-white shadow-soft transition-all hover:bg-teal-deep hover:shadow-lift disabled:opacity-50"
+          >
+            <Plus className="h-5 w-5" /> {creating ? 'Creating…' : 'Generate Invite Code'}
+          </button>
+        }
+      />
 
       {error && (
         <div className="mb-6 rounded-2xl border border-coral/20 bg-coral-soft px-5 py-4 text-[15px] font-medium text-coral">
@@ -94,22 +96,14 @@ function CaregiversContent() {
       )}
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div
-            className="h-11 w-11 rounded-full border-4 border-teal-soft border-t-teal"
-            style={{ animation: 'spin 0.9s linear infinite' }}
-          />
-        </div>
+        <Spinner />
       ) : links.length === 0 ? (
-        <div className="rounded-2xl border border-border bg-card py-20 text-center shadow-soft">
-          <span className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-teal-soft">
-            <Users className="h-8 w-8 text-teal" />
-          </span>
-          <p className="text-xl text-ink">No caregiver links yet</p>
-          <p className="mt-1 text-muted-foreground">
-            Generate an invite code and share it with your caregiver
-          </p>
-        </div>
+        <EmptyState
+          icon={<Users className="h-8 w-8" />}
+          title="No caregiver links yet"
+          hint="Generate an invite code and share it with your caregiver"
+          accent="teal"
+        />
       ) : (
         <div className="space-y-3">
           {links.map((link, i) => (
