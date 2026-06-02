@@ -9,6 +9,7 @@ export type User = {
   phone: string;
   role: Role;
   is_active: boolean;
+  fast_mode: boolean;
   created_at?: string;
 };
 

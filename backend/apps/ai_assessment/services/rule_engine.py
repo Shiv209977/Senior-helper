@@ -54,6 +54,17 @@ def score_features(features):
         score += 8
         reasons.append("Appetite level is very low.")
 
+    symptom_severity = features.get("symptom_severity_score", 0)
+    if symptom_severity >= 9:
+        score += 20
+        reasons.append("Patient-reported overall symptom severity is critical.")
+    elif symptom_severity >= 7:
+        score += 12
+        reasons.append("Patient-reported overall symptom severity is high.")
+    elif symptom_severity >= 5:
+        score += 5
+        reasons.append("Patient-reported overall symptom severity is moderate.")
+
     if features.get("fever"):
         score += 10
         reasons.append("Fever was reported in symptoms.")

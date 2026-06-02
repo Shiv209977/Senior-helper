@@ -121,10 +121,10 @@ export default function ChatWidget() {
 
   return (
     <>
-      {/* Trigger button — positioned left of SOS button */}
+      {/* Trigger button — positioned above SOS button */}
       <button
         onClick={() => handleOpenChange(true)}
-        className="fixed bottom-6 right-28 z-40 flex items-center gap-2.5 rounded-full bg-teal px-5 py-3.5 text-[15px] font-bold text-white shadow-lift transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal/40"
+        className="fixed bottom-24 right-6 z-40 flex items-center gap-2.5 rounded-full bg-teal px-5 py-3.5 text-[15px] font-bold text-white shadow-lift transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal/40"
         aria-label="Open health chat"
       >
         <MessageCircle className="h-5 w-5" /> Chat

@@ -48,6 +48,14 @@ class CurrentUserView(APIView):
     def get(self, request):
         return Response(UserSerializer(request.user).data)
 
+    def patch(self, request):
+        allowed = {"fast_mode"}
+        data = {k: v for k, v in request.data.items() if k in allowed}
+        serializer = UserSerializer(request.user, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
 
 class UserAdminViewSet(viewsets.ModelViewSet):
     serializer_class = AdminUserSerializer

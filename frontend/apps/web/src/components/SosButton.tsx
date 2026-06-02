@@ -57,10 +57,9 @@ export default function SosButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="group fixed bottom-6 right-6 z-40 flex items-center gap-2.5 rounded-full bg-coral px-6 py-4 text-[16px] font-bold text-white shadow-lift transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral/40"
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 rounded-full bg-coral px-6 py-4 text-[16px] font-bold text-white shadow-lift transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral/40"
         aria-label={t('sos.help')}
       >
-        <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-coral/40 group-hover:hidden" />
         <AlertTriangle className="h-6 w-6" /> SOS
       </button>
 

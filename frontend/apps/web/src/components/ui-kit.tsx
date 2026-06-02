@@ -123,9 +123,46 @@ export function Field({
   );
 }
 
+/* ── Toggle switch ──────────────────────────────────────────────────── */
+interface ToggleProps {
+  checked: boolean;
+  onChange: () => void;
+  disabled?: boolean;
+  color?: 'teal' | 'gold';
+  label?: string;
+}
+
+export function Toggle({ checked, onChange, disabled, color = 'teal', label }: ToggleProps) {
+  const track = checked
+    ? color === 'gold' ? 'bg-gold' : 'bg-teal'
+    : 'bg-muted-foreground/30';
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={onChange}
+      disabled={disabled}
+      className={`relative inline-flex h-7 w-[52px] flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50 ${track}`}
+    >
+      <span
+        className={`pointer-events-none absolute top-[3px] h-[22px] w-[22px] rounded-full bg-white shadow-md transition-transform duration-200 ${
+          checked ? 'translate-x-[27px]' : 'translate-x-[3px]'
+        }`}
+      />
+    </button>
+  );
+}
+
 /* ── Accessible dialog: Esc to close, focus-trap, focus return ──────── */
 export function useDialogA11y<T extends HTMLElement>(onClose: () => void) {
   const ref = useRef<T>(null);
+  // Keep a stable ref to onClose so the effect never needs to re-run when the
+  // parent re-renders (e.g. on every keystroke in a textarea), which would
+  // steal focus back to the first focusable element.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     const node = ref.current;
@@ -147,7 +184,7 @@ export function useDialogA11y<T extends HTMLElement>(onClose: () => void) {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key === 'Tab') {
@@ -170,7 +207,8 @@ export function useDialogA11y<T extends HTMLElement>(onClose: () => void) {
       document.removeEventListener('keydown', onKeyDown);
       previouslyFocused?.focus?.();
     };
-  }, [onClose]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return ref;
 }

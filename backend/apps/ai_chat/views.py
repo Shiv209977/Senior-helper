@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from rest_framework import permissions, status
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
@@ -166,6 +167,18 @@ class ChatMessageView(APIView):
         if concern_level is not None:
             modifier_applied = min(int(concern_level * 1.5), 15)
 
+        # Auto-escalate on critical LLM-detected symptoms
+        is_critical = extracted_flags.get("bleeding") or extracted_flags.get("breathing_difficulty")
+        is_high_concern = concern_level is not None and concern_level >= 8
+        if is_critical or is_high_concern:
+            if is_critical:
+                _create_emergency_if_not_active(patient)
+            try:
+                from apps.ai_assessment.services.runner import run_assessment_for_patient
+                run_assessment_for_patient(patient, sender)
+            except Exception:
+                pass
+
         # Save assistant message
         ChatMessage.objects.create(
             patient=patient,
@@ -230,3 +243,31 @@ class DigestView(APIView):
             notify_user(cg, f"Digest: {patient.full_name}", digest, notification_type="alert:ai")
 
         return Response({"message": "Digest sent to caregivers."}, status=status.HTTP_200_OK)
+
+
+_LLM_NOTES_CACHE_KEY = "llm_notes_analysis_enabled"
+
+
+class DemoSettingsView(APIView):
+    """GET/POST /api/settings/demo/ — read or toggle demo feature flags. Admin only."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def _require_admin(self, user):
+        if user.role != "admin":
+            raise PermissionDenied("Only admins can change demo settings.")
+
+    def get(self, request):
+        self._require_admin(request.user)
+        return Response({
+            "llm_notes_analysis": cache.get(_LLM_NOTES_CACHE_KEY, False),
+        })
+
+    def post(self, request):
+        self._require_admin(request.user)
+        current = cache.get(_LLM_NOTES_CACHE_KEY, False)
+        new_value = not current
+        cache.set(_LLM_NOTES_CACHE_KEY, new_value, timeout=None)
+        return Response({
+            "llm_notes_analysis": new_value,
+        })

@@ -3,11 +3,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import AuthGuard from '@/components/AuthGuard';
 import AppLayout from '@/components/AppLayout';
-import { Shield, Search, Save, X, UserCheck, UserX } from 'lucide-react';
+import { Shield, Search, Save, X, UserCheck, UserX, FlaskConical } from 'lucide-react';
 import { listUsers, updateUser } from '@/lib/api/admin';
+import { apiFetch } from '@/lib/api/client';
 import type { User } from '@/lib/api/types';
 import { toast } from 'sonner';
-import { PageHeader, Spinner, useDialogA11y } from '@/components/ui-kit';
+import { PageHeader, Spinner, Toggle, useDialogA11y } from '@/components/ui-kit';
 
 const inputClass =
   'w-full rounded-xl border border-transparent bg-muted/50 px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:bg-card focus:outline-none focus:ring-2 focus:ring-ring/30 placeholder:text-muted-foreground/55';
@@ -30,6 +31,28 @@ function AdminContent() {
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [saving, setSaving] = useState(false);
+
+  const [llmNotes, setLlmNotes] = useState(false);
+  const [llmToggling, setLlmToggling] = useState(false);
+
+  useEffect(() => {
+    apiFetch<{ llm_notes_analysis: boolean }>('/settings/demo/')
+      .then((d) => setLlmNotes(d.llm_notes_analysis))
+      .catch(() => {});
+  }, []);
+
+  const handleLlmToggle = async () => {
+    setLlmToggling(true);
+    try {
+      const d = await apiFetch<{ llm_notes_analysis: boolean }>('/settings/demo/', { method: 'POST' });
+      setLlmNotes(d.llm_notes_analysis);
+      toast.success(d.llm_notes_analysis ? 'LLM notes analysis ON' : 'LLM notes analysis OFF');
+    } catch {
+      toast.error('Could not update setting');
+    } finally {
+      setLlmToggling(false);
+    }
+  };
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -229,6 +252,34 @@ function AdminContent() {
           </div>
         </div>
       )}
+
+      {/* Demo Settings */}
+      <div className="mt-10">
+        <h2 className="mb-4 flex items-center gap-2 text-[18px] font-bold text-ink">
+          <FlaskConical className="h-5 w-5 text-lavender" /> Demo Settings
+        </h2>
+        <div className="animate-rise rounded-2xl border border-border bg-card p-6 shadow-soft">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-[16px] font-semibold text-ink">LLM Notes Analysis</p>
+              <p className="mt-0.5 text-[13px] text-muted-foreground">
+                When ON, free-text notes in vitals &amp; symptoms are sent to the AI to extract symptom flags.
+                Slower but smarter. Uses keyword matching when OFF.
+              </p>
+            </div>
+            <Toggle
+              checked={llmNotes}
+              onChange={handleLlmToggle}
+              disabled={llmToggling}
+              color="teal"
+              label="LLM Notes Analysis"
+            />
+          </div>
+          <p className="mt-4 text-[12px] text-muted-foreground">
+            Note: this setting resets to OFF if the server restarts (stored in memory cache).
+          </p>
+        </div>
+      </div>
 
       <style jsx global>{`
         @keyframes spin {

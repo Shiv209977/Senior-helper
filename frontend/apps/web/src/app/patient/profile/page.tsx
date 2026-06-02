@@ -3,12 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import AuthGuard from '@/components/AuthGuard';
 import AppLayout from '@/components/AppLayout';
-import { User, Save } from 'lucide-react';
+import { User, Save, Zap } from 'lucide-react';
 import { listPatientProfiles, updatePatientProfile } from '@/lib/api/profiles';
+import { apiFetch } from '@/lib/api/client';
 import { useAuthStore } from '@/lib/store/auth';
 import type { PatientProfile } from '@/lib/api/types';
 import { toast } from 'sonner';
-import { PageHeader, Spinner } from '@/components/ui-kit';
+import { PageHeader, Spinner, Toggle } from '@/components/ui-kit';
 
 const inputClass =
   'w-full rounded-xl border border-transparent bg-muted/50 px-4 py-3 text-[16px] text-ink transition-colors focus:border-ring focus:bg-card focus:outline-none focus:ring-2 focus:ring-ring/30 placeholder:text-muted-foreground/55';
@@ -20,6 +21,29 @@ function ProfileContent() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  const [fastMode, setFastMode] = useState<boolean>(true);
+  const [fastModeToggling, setFastModeToggling] = useState(false);
+
+  useEffect(() => {
+    if (user) setFastMode(user.fast_mode ?? true);
+  }, [user?.fast_mode]);
+
+  const handleFastModeToggle = async () => {
+    setFastModeToggling(true);
+    try {
+      const updated = await apiFetch<{ fast_mode: boolean }>('/auth/me/', {
+        method: 'PATCH',
+        body: JSON.stringify({ fast_mode: !fastMode }),
+      });
+      setFastMode(updated.fast_mode);
+      toast.success(updated.fast_mode ? 'Fast Mode ON — using quick keyword detection' : 'Fast Mode OFF — AI reads your notes');
+    } catch {
+      toast.error('Could not update preference');
+    } finally {
+      setFastModeToggling(false);
+    }
+  };
 
   // Editable fields
   const [age, setAge] = useState('');
@@ -251,6 +275,32 @@ function ProfileContent() {
           >
             <Save className="h-5 w-5" /> {saving ? 'Saving…' : 'Save Changes'}
           </button>
+        </div>
+      </div>
+
+      {/* Fast Mode preference */}
+      <div className="animate-rise mt-6 rounded-[1.5rem] border border-border bg-card p-6 shadow-soft md:p-8" style={{ animationDelay: '0.12s' }}>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-gold/20">
+              <Zap className="h-5 w-5 text-gold" />
+            </span>
+            <div>
+              <p className="text-[16px] font-semibold text-ink">Fast Mode</p>
+              <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+                {fastMode
+                  ? 'ON — Your notes are checked instantly using smart keyword detection.'
+                  : 'OFF — Your notes are read by AI for deeper understanding. Takes a few extra seconds.'}
+              </p>
+            </div>
+          </div>
+          <Toggle
+            checked={fastMode}
+            onChange={handleFastModeToggle}
+            disabled={fastModeToggling}
+            color="gold"
+            label="Fast Mode"
+          />
         </div>
       </div>
 

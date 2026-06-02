@@ -13,6 +13,30 @@ def safe_int(value, default=0):
     return int(value)
 
 
+_KEYWORD_FLAGS = {
+    "bleeding": ["bleed", "blood", "bloody", "haemorrhage", "hemorrhage", "haematemesis"],
+    "vomiting": ["vomit", "vomiting", "throwing up", "puking"],
+    "breathing_difficulty": [
+        "can't breathe", "cannot breathe", "difficulty breath", "short of breath",
+        "shortness of breath", "breathing problem", "suffocating", "gasping",
+    ],
+    "fever": ["high temperature", "burning up", "having fever", "got fever", "running fever"],
+    "infection_signs": ["infection", "infected", "pus", "wound", "swelling"],
+}
+
+
+def _flags_from_notes(notes_text):
+    """Return symptom flags detected in free-text notes (case-insensitive)."""
+    detected = {}
+    if not notes_text:
+        return detected
+    lower = notes_text.lower()
+    for flag, keywords in _KEYWORD_FLAGS.items():
+        if any(kw in lower for kw in keywords):
+            detected[flag] = True
+    return detected
+
+
 def build_features_for_patient(patient):
     latest_vitals = VitalSign.objects.filter(patient=patient).order_by("-recorded_at").first()
     latest_symptoms = SymptomRecord.objects.filter(patient=patient).order_by("-symptom_date", "-created_at").first()
@@ -34,6 +58,10 @@ def build_features_for_patient(patient):
         created_at__gte=now - timedelta(days=30),
     ).count()
 
+    symptom_notes = getattr(latest_symptoms, "notes", "") or ""
+    vital_notes = getattr(latest_vitals, "notes", "") if latest_vitals else ""
+    notes_flags = _flags_from_notes(f"{symptom_notes} {vital_notes}")
+
     features = {
         "age": getattr(profile, "age", None) or 0,
         "cancer_type": getattr(profile, "cancer_type", "") if profile else "",
@@ -46,12 +74,14 @@ def build_features_for_patient(patient):
         "pain_level": safe_int(getattr(latest_vitals, "pain_level", 0)),
         "fatigue_level": safe_int(getattr(latest_vitals, "fatigue_level", 0)),
         "appetite_level": safe_int(getattr(latest_vitals, "appetite_level", 5), 5),
-        "fever": bool(getattr(latest_symptoms, "fever", False)),
+        "symptom_severity_score": safe_int(getattr(latest_symptoms, "symptom_severity_score", 0)),
+        # Boolean flags: checkbox OR keyword-detected from notes text
+        "fever": bool(getattr(latest_symptoms, "fever", False)) or notes_flags.get("fever", False),
         "nausea": bool(getattr(latest_symptoms, "nausea", False)),
-        "vomiting": bool(getattr(latest_symptoms, "vomiting", False)),
-        "breathing_difficulty": bool(getattr(latest_symptoms, "breathing_difficulty", False)),
-        "bleeding": bool(getattr(latest_symptoms, "bleeding", False)),
-        "infection_signs": bool(getattr(latest_symptoms, "infection_signs", False)),
+        "vomiting": bool(getattr(latest_symptoms, "vomiting", False)) or notes_flags.get("vomiting", False),
+        "breathing_difficulty": bool(getattr(latest_symptoms, "breathing_difficulty", False)) or notes_flags.get("breathing_difficulty", False),
+        "bleeding": bool(getattr(latest_symptoms, "bleeding", False)) or notes_flags.get("bleeding", False),
+        "infection_signs": bool(getattr(latest_symptoms, "infection_signs", False)) or notes_flags.get("infection_signs", False),
         "missed_med_24h": missed_med_24h,
         "missed_appt_30d": missed_appt_30d,
         "emergency_30d": emergency_30d,
