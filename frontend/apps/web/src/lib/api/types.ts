@@ -233,3 +233,22 @@ export type LoginPayload = {
   email: string;
   password: string;
 };
+
+// ─── Chat types ───────────────────────────────────────────────────────────
+export type ChatMessage = {
+  id: number;
+  patient: number;
+  sender: number;
+  role: 'user' | 'assistant';
+  content: string;
+  concern_level: number | null;
+  unstructured_notes: string;
+  created_at: string;
+};
+
+export type ChatResponse = {
+  response: string;
+  concern_level: number | null;
+  unstructured_notes: string;
+  modifier_applied: number;
+};

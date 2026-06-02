@@ -77,6 +77,25 @@ class AIRiskAssessmentViewSet(viewsets.ModelViewSet):
             ml_score=final["ml_score"],
             created_alert=created_alert,
         )
+
+        # Trigger caregiver digest on medium→high escalation
+        # Use [1:2] to skip the just-created record and fetch the previous one
+        prev = (
+            AIRiskAssessment.objects.filter(patient=patient)
+            .order_by("-created_at")[1:2]
+            .first()
+        )
+        if prev and prev.risk_category == "medium" and final["risk_category"] == "high":
+            from apps.ai_chat.services.digest_builder import build_caregiver_digest
+            from apps.notifications.services import linked_caregivers_for, notify_user
+
+            try:
+                digest = build_caregiver_digest(patient)
+                for cg in linked_caregivers_for(patient):
+                    notify_user(cg, f"Risk escalation: {patient.full_name}", digest, notification_type="alert:ai")
+            except Exception:
+                pass  # digest is best-effort; don't block assessment
+
         return Response(AIRiskAssessmentSerializer(assessment).data, status=status.HTTP_201_CREATED)
 
     def resolve_patient(self, patient_id):

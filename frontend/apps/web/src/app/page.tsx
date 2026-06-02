@@ -422,13 +422,13 @@ function Footer() {
           <h4 className="font-serif text-xl text-ink">Contact Us</h4>
           <ul className="mt-4 space-y-3 text-[15px] text-muted-foreground">
             <li className="flex items-center gap-2.5">
-              <Phone className="h-4 w-4 shrink-0 text-teal" /> 1800 123 1234
+              <Phone className="h-4 w-4 shrink-0 text-teal" /> 1234567890
             </li>
             <li className="flex items-center gap-2.5">
               <Mail className="h-4 w-4 shrink-0 text-teal" /> care@lifeway.in
             </li>
             <li className="flex items-start gap-2.5">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-teal" /> 12 Residency Road, Bengaluru, Karnataka 560025
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-teal" /> 12 Roads, Bengaluru, Karnataka 5600255
             </li>
             <li className="flex items-center gap-2.5">
               <Check className="h-4 w-4 shrink-0 text-teal" /> Mon–Sat 8AM–8PM IST · Sun 9AM–5PM IST

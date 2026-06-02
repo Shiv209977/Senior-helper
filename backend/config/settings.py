@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "apps.audit",
     "apps.health",
     "apps.ai_assessment",
+    "apps.ai_chat",
 ]
 
 MIDDLEWARE = [
@@ -124,3 +125,5 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
+
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")

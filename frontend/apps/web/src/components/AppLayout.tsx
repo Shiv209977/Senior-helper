@@ -24,6 +24,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { listNotifications } from '@/lib/api/notifications';
 import { usePrefs, type StringKey } from '@/lib/prefs';
 import SosButton from '@/components/SosButton';
+import ChatWidget from '@/components/ChatWidget';
 
 type NavItem = { key: StringKey; href: string; icon: React.ElementType };
 
@@ -264,6 +265,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <main className="mx-auto max-w-6xl p-4 lg:p-8">{children}</main>
       </div>
 
+      {/* AI health chat widget — renders only for patients */}
+      <ChatWidget />
       {/* Always-available emergency action */}
       <SosButton />
     </div>

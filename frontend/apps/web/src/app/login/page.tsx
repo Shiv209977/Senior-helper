@@ -124,7 +124,7 @@ export default function LoginPage() {
 
         {/* Demo accounts hint */}
         <div className="mt-6 rounded-2xl border border-border bg-muted/50 p-4">
-          <p className="mb-2 text-[13px] font-medium text-muted-foreground">Demo Accounts (Password123!)</p>
+          <p className="mb-2 text-[13px] font-medium text-muted-foreground">Demo Accounts Password123!</p>
           <div className="space-y-1 text-[13px] text-muted-foreground">
             <p>patient@example.com · admin@example.com · caregiver@example.com</p>
           </div>
