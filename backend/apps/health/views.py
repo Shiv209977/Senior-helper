@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.utils import timezone
 from rest_framework import decorators, viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -78,6 +79,19 @@ class VitalSignViewSet(viewsets.ModelViewSet):
         vital = serializer.save(patient=patient, recorded_by=self.request.user)
         create_vitals_alerts(vital)
         log_action(user=self.request.user, action="vitals_created", metadata={"vital_id": vital.id})
+        notes_flags = {}
+        use_llm = cache.get("llm_notes_analysis_enabled", False) and not self.request.user.fast_mode
+        if vital.notes and vital.notes.strip() and use_llm:
+            try:
+                from apps.ai_chat.services.notes_analyzer import analyze_notes
+                notes_flags = analyze_notes(vital.notes)
+            except Exception:
+                pass
+        try:
+            from apps.ai_assessment.services.runner import run_assessment_for_patient
+            run_assessment_for_patient(patient, self.request.user, extra_flags=notes_flags)
+        except Exception:
+            pass
 
 
 class SymptomRecordViewSet(viewsets.ModelViewSet):
@@ -91,6 +105,54 @@ class SymptomRecordViewSet(viewsets.ModelViewSet):
         record = serializer.save(patient=patient, recorded_by=self.request.user)
         create_symptom_alerts(record)
         log_action(user=self.request.user, action="symptoms_created", metadata={"symptom_id": record.id})
+        # Create emergency for life-threatening symptom flags
+        if record.bleeding or record.breathing_difficulty:
+            if not EmergencyRequest.objects.filter(patient=patient, status=EmergencyRequest.Status.ACTIVE).exists():
+                emergency = EmergencyRequest.objects.create(
+                    patient=patient,
+                    triggered_by=self.request.user,
+                    emergency_type="symptom_escalation",
+                    message="Critical symptoms logged: bleeding or breathing difficulty.",
+                )
+                create_alert_for_patient(
+                    patient=patient,
+                    alert_type="emergency",
+                    severity="emergency",
+                    title="Emergency — critical symptoms logged",
+                    message="Patient logged bleeding or breathing difficulty.",
+                    source=emergency,
+                )
+        notes_flags = {}
+        use_llm = cache.get("llm_notes_analysis_enabled", False) and not self.request.user.fast_mode
+        if record.notes and record.notes.strip() and use_llm:
+            try:
+                from apps.ai_chat.services.notes_analyzer import analyze_notes
+                notes_flags = analyze_notes(record.notes)
+            except Exception:
+                pass
+        # Notes-detected bleeding/breathing_difficulty also triggers emergency
+        if not (record.bleeding or record.breathing_difficulty):
+            if notes_flags.get("bleeding") or notes_flags.get("breathing_difficulty"):
+                if not EmergencyRequest.objects.filter(patient=patient, status=EmergencyRequest.Status.ACTIVE).exists():
+                    emergency = EmergencyRequest.objects.create(
+                        patient=patient,
+                        triggered_by=self.request.user,
+                        emergency_type="symptom_escalation",
+                        message="Critical symptoms detected in symptom notes.",
+                    )
+                    create_alert_for_patient(
+                        patient=patient,
+                        alert_type="emergency",
+                        severity="emergency",
+                        title="Emergency — critical symptoms in notes",
+                        message="AI detected bleeding or breathing difficulty in patient's notes.",
+                        source=emergency,
+                    )
+        try:
+            from apps.ai_assessment.services.runner import run_assessment_for_patient
+            run_assessment_for_patient(patient, self.request.user, extra_flags=notes_flags)
+        except Exception:
+            pass
 
 
 class EmergencyRequestViewSet(viewsets.ModelViewSet):

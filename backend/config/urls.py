@@ -37,6 +37,7 @@ urlpatterns = [
     path("api/auth/login/", LoginView.as_view(), name="login"),
     path("api/auth/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
     path("api/auth/me/", CurrentUserView.as_view(), name="current-user"),
+    path("api/", include("apps.ai_chat.urls")),
     path("api/", include(router.urls)),
 ]
 

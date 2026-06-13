@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "apps.audit",
     "apps.health",
     "apps.ai_assessment",
+    "apps.ai_chat",
 ]
 
 MIDDLEWARE = [
@@ -116,9 +117,13 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,
 }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
+
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")

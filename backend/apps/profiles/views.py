@@ -9,6 +9,7 @@ from apps.profiles.serializers import CaregiverProfileSerializer, PatientProfile
 class PatientProfileViewSet(viewsets.ModelViewSet):
     serializer_class = PatientProfileSerializer
     http_method_names = ["get", "patch", "head", "options"]
+    pagination_class = None
 
     def get_queryset(self):
         user = self.request.user

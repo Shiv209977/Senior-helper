@@ -39,6 +39,7 @@ class User(AbstractUser):
     full_name = models.CharField(max_length=160)
     phone = models.CharField(max_length=32, blank=True)
     role = models.CharField(max_length=20, choices=Role.choices)
+    fast_mode = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

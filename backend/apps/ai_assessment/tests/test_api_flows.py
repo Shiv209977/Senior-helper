@@ -63,7 +63,7 @@ class DemoApiFlowTests(APITestCase):
         detail_response = self.client.get(f"/api/medications/{self.other_medication.id}/")
 
         self.assertEqual(list_response.status_code, status.HTTP_200_OK)
-        self.assertEqual([item["id"] for item in list_response.data], [self.medication.id])
+        self.assertEqual([item["id"] for item in list_response.data["results"]], [self.medication.id])
         self.assertEqual(detail_response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_caregiver_can_only_view_linked_patient_data(self):
@@ -72,7 +72,7 @@ class DemoApiFlowTests(APITestCase):
         response = self.client.get("/api/medications/")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual([item["id"] for item in response.data], [self.medication.id])
+        self.assertEqual([item["id"] for item in response.data["results"]], [self.medication.id])
 
     def test_linked_caregiver_can_create_vitals_and_symptoms_for_patient(self):
         self.authenticate(self.caregiver)

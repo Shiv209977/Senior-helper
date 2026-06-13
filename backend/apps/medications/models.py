@@ -15,6 +15,7 @@ class Medication(models.Model):
     scheduled_times = models.JSONField(default=list, blank=True)
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
+    grace_period_minutes = models.PositiveSmallIntegerField(default=60)
     instructions = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
